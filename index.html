@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>一思数据</title>
+    <link rel="icon" href="indexphoto.jpg" type="image/jpeg" sizes="256x256">
     <style>
         body {
             background-color: #e0f7fa;
@@ -12,8 +13,16 @@
             padding: 0;
         }
         header {
-            background-color: #00bcd4;
-            color: #fff;
+            /* 顶部渐变，向下更自然地变透明 */
+            background: linear-gradient(
+                180deg,
+                #e0f7fa 0%,
+                #e0f7fa 40%,
+                rgba(224,247,250,0.7) 70%,
+                rgba(224,247,250,0.3) 90%,
+                rgba(224,247,250,0) 100%
+            );
+            color: #0097a7;
             padding: 30px 0 20px 0;
             text-align: center;
         }
@@ -45,11 +54,13 @@
             border-radius: 4px;
             font-size: 1.2em;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: background 0.3s, opacity 0.3s;
             margin-top: 30px;
+            opacity: 0.6;
         }
         .enter-btn:hover {
             background-color: #00838f;
+            opacity: 0.8;
         }
         .main-content {
             display: none;
@@ -82,8 +93,16 @@
             }
         }
         footer {
-            background-color: #00bcd4;
-            color: #fff;
+            /* 底部渐变，向上更自然地变透明 */
+            background: linear-gradient(
+                0deg,
+                #e0f7fa 0%,
+                #e0f7fa 40%,
+                rgba(224,247,250,0.7) 70%,
+                rgba(224,247,250,0.3) 90%,
+                rgba(224,247,250,0) 100%
+            );
+            color: #0097a7;
             text-align: center;
             padding: 10px 0;
             position: fixed;
@@ -96,11 +115,18 @@
         }
     </style>
 </head>
-<body>
+<body style="background-color: #e0f7fa;">
+    <!-- 全局视频背景，支持回退到纯色背景 -->
+    <video id="globalBgVideo" autoplay loop muted playsinline style="position:fixed;left:0;top:0;width:100vw;height:100vh;object-fit:cover;z-index:-1;display:block;background:#e0f7fa;">
+        <source src="vidio.mp4" type="video/mp4">
+        <!-- 如果不支持视频，自动显示body的背景色 -->
+    </video>
     <!-- 樱花飘落特效canvas -->
     <canvas id="sakura-canvas" style="position:fixed;left:0;top:0;width:100vw;height:100vh;pointer-events:none;z-index:0;"></canvas>
     <header>
-        <h1 class="main-title"><i>一思数据</i></h1>
+        <h1 class="main-title" style="font-family: 'Brush Script MT', 'Segoe Script', cursive, '微软雅黑', Arial, sans-serif; font-size:3em; font-style:italic; letter-spacing:4px; margin:20px auto 0 auto; text-align:center;">
+            一思数据
+        </h1>
     </header>
     <main>
         <div id="welcome">
@@ -108,48 +134,113 @@
             <button class="enter-btn" onclick="showMainContent()">进入主网站</button>
         </div>
         <div id="mainContent" class="main-content">
-            <h2 style="margin-top:0;">欢迎来到一思数据主界面</h2>
+            <h2 style="margin-top:0; background:rgba(255,255,255,0.6); border-radius:10px; box-shadow:0 2px 8px rgba(0,188,212,0.08); padding:18px 0 14px 0; max-width:800px; margin-left:auto; margin-right:auto;">
+                欢迎来到一思数据主界面
+            </h2>
             <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; margin-top: 30px;">
                 <!-- Bilibili主页模块 -->
-                <div style="background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,188,212,0.08); padding:24px 32px; min-width:220px; max-width:300px; flex:1;">
+                <div style="background:rgba(255,255,255,0.6); border-radius:10px; box-shadow:0 2px 8px rgba(0,188,212,0.08); padding:24px 32px; min-width:220px; max-width:300px; flex:1;">
                     <h3 style="color:#0097a7; margin-top:0;">Bilibili主页</h3>
                     <p>访问我的Bilibili主页，获取更多视频内容</p>
                     <a href="https://space.bilibili.com/547783759" target="_blank" style="color:#fff; background:#00bcd4; padding:8px 18px; border-radius:4px; text-decoration:none; display:inline-block;">前往B站主页</a>
                 </div>
                 <!-- 文件下载模块 -->
-                <div style="background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,188,212,0.08); padding:24px 32px; min-width:220px; max-width:300px; flex:1;">
+                <div style="background:rgba(255,255,255,0.6); border-radius:10px; box-shadow:0 2px 8px rgba(0,188,212,0.08); padding:24px 32px; min-width:220px; max-width:300px; flex:1;">
                     <h3 style="color:#0097a7; margin-top:0;">文件下载</h3>
                     <p>下载相关资料和工具文件</p>
                     <a href="javascript:void(0);" onclick="showDownloadPage()" style="color:#fff; background:#00bcd4; padding:8px 18px; border-radius:4px; text-decoration:none; display:inline-block;">进入下载页</a>
                 </div>
                 <!-- 开发须知模块 -->
-                <div style="background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,188,212,0.08); padding:24px 32px; min-width:220px; max-width:300px; flex:1;">
+                <div style="background:rgba(255,255,255,0.6); border-radius:10px; box-shadow:0 2px 8px rgba(0,188,212,0.08); padding:24px 32px; min-width:220px; max-width:300px; flex:1;">
                     <h3 style="color:#0097a7; margin-top:0;">开发须知</h3>
                     <p>用户使用协议</p>
-                    <a href="dev_notice.html" onclick="openNotice();return false;" style="color:#fff; background:#00bcd4; padding:8px 18px; border-radius:4px; text-decoration:none; display:inline-block;">查看开发须知</a>
+                    <a href="javascript:void(0);" onclick="showNoticePage()" style="color:#fff; background:#00bcd4; padding:8px 18px; border-radius:4px; text-decoration:none; display:inline-block;">查看开发须知</a>
+                </div>
+                <!-- 赞助模块 -->
+                <div style="background:rgba(255,255,255,0.6); border-radius:10px; box-shadow:0 2px 8px rgba(0,188,212,0.08); padding:24px 32px; min-width:220px; max-width:300px; flex:1;">
+                    <h3 style="color:#0097a7; margin-top:0;">赞助</h3>
+                    <p>支持本站发展，点击进入赞助页面</p>
+                    <a href="https://ifdian.net/a/one_thought" target="_blank" style="color:#fff; background:#00bcd4; padding:8px 18px; border-radius:4px; text-decoration:none; display:inline-block;">前往赞助页</a>
                 </div>
             </div>
         </div>
-        <!-- 下载页面 -->
-        <div id="downloadPage" class="main-content" style="display:none;">
-            <div style="text-align:left;">
-                <button onclick="backToMain()" style="background:none;border:none;color:#0097a7;font-size:1.5em;cursor:pointer;padding:0 0 10px 0;">
-                    &#8592; 返回
-                </button>
+        <!-- 下载页面，去掉视频播放，只保留白色内容层 -->
+        <div id="downloadPage" class="main-content" style="display:none; position:relative; overflow:hidden;">
+            <div style="position:relative;z-index:1;background:rgba(255,255,255,0.6);max-width:700px;
+                margin:40px auto 40px auto;padding:36px 32px 32px 32px;
+                border-radius:12px;box-shadow:0 4px 16px rgba(0,188,212,0.10);
+                min-height:60vh;">
+                <div style="text-align:left;">
+                    <button onclick="backToMain()" style="background:none;border:none;color:#0097a7;font-size:1.5em;cursor:pointer;padding:0 0 10px 0;">
+                        &#8592; 返回
+                    </button>
+                </div>
+                <h2 style="margin-top:0;">文件下载</h2>
+                <ul style="list-style:none;padding:0;">
+                    <li style="margin:18px 0;">
+                        <a href="https://www.123912.com/s/RJIgTd-RiYxv" style="color:#0097a7;text-decoration:underline;" download target="_blank">ubantu镜像文件</a>
+                    </li>
+                    <li style="margin:18px 0;">
+                        <a href="download/SkinsRestorer.jar" style="color:#0097a7;text-decoration:underline;" download target="_blank">SkinsRestorer</a>
+                    </li>
+                </ul>
             </div>
-            <h2 style="margin-top:0;">文件下载</h2>
-            <ul style="list-style:none;padding:0;">
-                <li style="margin:18px 0;">
-                    <a href="https://www.123912.com/s/RJIgTd-RiYxv" style="color:#0097a7;text-decoration:underline;" download target="_blank">ubantu镜像文件</a>
-                </li>
-                <li style="margin:18px 0;">
-                    <a href="download\SkinsRestorer.jar" style="color:#0097a7;text-decoration:underline;" download target="_blank">SkinsRestorer</a>
-                </li>
-            </ul>
+        </div>
+        <!-- 优化后的开发须知内容页面排版，ul嵌套ul改为li内ul，避免结构错乱 -->
+        <div id="noticePage" class="main-content" style="display:none;">
+            <div class="container" style="background:rgba(255,255,255,0.6); border-radius:12px; box-shadow:0 4px 16px rgba(0,188,212,0.10); max-width:700px; margin:40px auto 0 auto; padding:36px 32px 32px 32px; text-align:left;">
+                <div>
+                    <button onclick="backToMain()" style="background:none;border:none;color:#0097a7;font-size:1.5em;cursor:pointer;padding:0 0 10px 0;">
+                        &#8592; 返回
+                    </button>
+                </div>
+                <h1 style="color:#0097a7;font-size:2em;margin-top:0;text-align:center;font-style:italic;">用户须知</h1>
+                <h2 style="color:#00bcd4;margin-top:32px;">关于本网站</h2>
+                <ul style="list-style: disc; margin-left: 2em;">
+                    <li>本网站由 OneThought开发并维护，致力于为用户提供安全可靠的服务体验。</li>
+                </ul>
+                <h2 style="color:#00bcd4;margin-top:32px;">下载内容安全声明</h2>
+                <ul style="list-style: disc; margin-left: 2em;">
+                    <li>本网站提供的所有下载链接均经过严格验证，确保来源可靠、内容安全。</li>
+                    <li>我们会对所有下载资源进行病毒扫描和安全检测，但不排除极少数情况下可能出现的安全风险。</li>
+                    <li>建议用户在下载后自行进行二次安全检查，并仅从本网站官方页面获取下载链接。</li>
+                </ul>
+                <h2 style="color:#00bcd4;margin-top:32px;">合作说明</h2>
+                <ul style="list-style: disc; margin-left: 2em;">
+                    <li>
+                        本网站与心跳数据建立了合作伙伴关系，部分服务功能可能涉及相关数据合作。我们承诺：
+                        <ul style="list-style: circle; margin-left: 2em;">
+                            <li>所有数据处理均遵守相关法律法规</li>
+                            <li>用户隐私保护是我们的首要考虑</li>
+                            <li>合作数据仅用于改善服务质量，不会用于其他商业用途</li>
+                        </ul>
+                    </li>
+                </ul>
+                <h2 style="color:#00bcd4;margin-top:32px;">用户责任</h2>
+                <ul style="list-style: disc; margin-left: 2em;">
+                    <li>请勿将本网站资源用于任何非法用途</li>
+                    <li>禁止对本网站进行任何形式的攻击或破坏</li>
+                    <li>用户应妥善保管自己的账户信息</li>
+                </ul>
+                <h2 style="color:#00bcd4;margin-top:32px;">免责声明</h2>
+                <ul style="list-style: disc; margin-left: 2em;">
+                    <li>OneThought不对因使用本网站内容而导致的任何直接或间接损失承担责任。</li>
+                </ul>
+                <h2 style="color:#00bcd4;margin-top:32px;">联系我们</h2>
+                <ul style="list-style: disc; margin-left: 2em;">
+                    <li>如有任何疑问或建议，请通过网站提供的联系方式与我们取得联系。</li>
+                </ul>
+            </div>
         </div>
     </main>
     <footer>
-        &copy; 2025 一思数据 | 联系我们：<a href="mailto:onemiss0628@163.com" style="color:#fff;text-decoration:underline;">onemiss0628@163.com</a>
+        <div style="display:flex;align-items:center;justify-content:center;gap:24px;">
+            <span>
+                &copy; 2025 一思数据 | 联系我们：
+                <a href="mailto:onemiss0628@163.com" style="color:#0097a7;text-decoration:underline;">onemiss0628@163.com</a>
+            </span>
+            <img src="logo.png" alt="一思数据LOGO" style="width:100px;height:auto;display:inline-block;">
+        </div>
     </footer>
     <script>
         // 进入页面时自动添加动画
@@ -163,34 +254,52 @@
             const welcome = document.getElementById('welcome');
             const mainContent = document.getElementById('mainContent');
             const downloadPage = document.getElementById('downloadPage');
+            const noticePage = document.getElementById('noticePage');
             if (welcome) {
                 welcome.classList.add('welcome-hide');
                 setTimeout(() => {
                     welcome.style.display = 'none';
                     mainContent.classList.add('show');
                     if (downloadPage) downloadPage.style.display = 'none';
+                    if (noticePage) noticePage.style.display = 'none';
                 }, 500);
             } else {
                 // 如果没有欢迎页（如通过hash跳转），直接显示主页面
                 mainContent.classList.add('show');
                 if (downloadPage) downloadPage.style.display = 'none';
+                if (noticePage) noticePage.style.display = 'none';
             }
         }
 
         function showDownloadPage() {
             document.getElementById('mainContent').style.display = 'none';
             const downloadPage = document.getElementById('downloadPage');
+            const noticePage = document.getElementById('noticePage');
             downloadPage.style.display = 'block';
+            if (noticePage) noticePage.style.display = 'none';
             setTimeout(() => {
                 downloadPage.classList.add('show');
             }, 10);
         }
 
+        function showNoticePage() {
+            document.getElementById('mainContent').style.display = 'none';
+            document.getElementById('downloadPage').style.display = 'none';
+            const noticePage = document.getElementById('noticePage');
+            noticePage.style.display = 'block';
+            setTimeout(() => {
+                noticePage.classList.add('show');
+            }, 10);
+        }
+
         function backToMain() {
             const downloadPage = document.getElementById('downloadPage');
-            downloadPage.classList.remove('show');
+            const noticePage = document.getElementById('noticePage');
+            if (downloadPage) downloadPage.classList.remove('show');
+            if (noticePage) noticePage.classList.remove('show');
             setTimeout(() => {
-                downloadPage.style.display = 'none';
+                if (downloadPage) downloadPage.style.display = 'none';
+                if (noticePage) noticePage.style.display = 'none';
                 const mainContent = document.getElementById('mainContent');
                 mainContent.style.display = 'block';
                 setTimeout(() => {
@@ -212,6 +321,17 @@
                 }
             }
         }
+
+        // 检查视频是否能播放，不能则隐藏视频，显示纯色背景
+        document.addEventListener('DOMContentLoaded', function() {
+            var video = document.getElementById('globalBgVideo');
+            if (video) {
+                video.onerror = function() {
+                    video.style.display = 'none';
+                    document.body.style.backgroundColor = '#e0f7fa';
+                };
+            }
+        });
 
         // 樱花飘落特效
         const canvas = document.getElementById('sakura-canvas');
