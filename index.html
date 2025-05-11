@@ -132,6 +132,21 @@
         .notice-animate {
             animation: fadeInUp 0.8s;
         }
+        /* 公告弹窗动画样式 */
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95);}
+            to   { opacity: 1; transform: scale(1);}
+        }
+        @keyframes modalFadeOut {
+            from { opacity: 1; transform: scale(1);}
+            to   { opacity: 0; transform: scale(0.95);}
+        }
+        #announcement-modal.announcement-fadein {
+            animation: modalFadeIn 0.35s;
+        }
+        #announcement-modal.announcement-fadeout {
+            animation: modalFadeOut 0.35s forwards;
+        }
     </style>
 </head>
 <body style="background-color: #e0f7fa;">
@@ -154,7 +169,7 @@
         </div>
         <div id="mainContent" class="main-content">
             <h2 style="margin-top:0; background:rgba(255,255,255,0.6); border-radius:10px; box-shadow:0 2px 8px rgba(0,188,212,0.08); padding:18px 0 14px 0; max-width:800px; margin-left:auto; margin-right:auto;">
-                欢迎来到一思数据主界面
+                欢迎来到一思数据
             </h2>
             <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; margin-top: 30px;">
                 <!-- Bilibili主页模块 -->
@@ -299,172 +314,147 @@
             Developed by OneThought
         </div>
     </footer>
+    <!-- 在</footer>后添加公告弹窗HTML -->
+    <div id="announcement-modal" style="display:none;position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:999;background:rgba(0,0,0,0.25);align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,188,212,0.18);padding:32px 28px;max-width:90vw;max-height:80vh;overflow:auto;min-width:260px;">
+            <h2 style="color:#0097a7;margin-top:0;font-size:1.3em;">公告</h2>
+            <div id="announcement-content" style="color:#006064;font-size:1.08em;line-height:1.7;"></div>
+            <button onclick="closeAnnouncement()" style="margin-top:18px;background:#0097a7;color:#fff;border:none;padding:8px 24px;border-radius:4px;cursor:pointer;">我知道了</button>
+        </div>
+    </div>
+    <!-- 在 body 末尾添加（或替换原公告 JS 部分） -->
+    <script id="ad-json" type="application/json">
+    {
+      "content": "欢迎访问一思数据！本网站近期有新功能上线，敬请关注。"
+    }
+    </script>
     <script>
-        // 进入页面时自动添加动画
-        window.onload = function() {
-            if (window.location.hash === "#main") {
-                showMainContent();
+        // 每次关闭页面时清空缓存
+        window.addEventListener('beforeunload', function() {
+            localStorage.removeItem('announcement_shown');
+        });
+
+        window.addEventListener('DOMContentLoaded', function() {
+            var welcome = document.getElementById('welcome');
+            var mainContent = document.getElementById('mainContent');
+            // 默认显示欢迎页，隐藏主内容
+            if (welcome) {
+                welcome.style.display = '';
+                welcome.classList.remove('welcome-hide');
             }
-        };
+            if (mainContent) {
+                mainContent.classList.remove('show');
+                mainContent.style.display = 'none';
+            }
+
+            // 首次访问弹出公告
+            if (!localStorage.getItem('announcement_shown')) {
+                var adJson = document.getElementById('ad-json');
+                if (adJson) {
+                    try {
+                        var data = JSON.parse(adJson.textContent);
+                        if (data && data.content) {
+                            showAnnouncement(data.content);
+                        }
+                    } catch(e){}
+                }
+            }
+        });
+
+        function showAnnouncement(content) {
+            var modal = document.getElementById('announcement-modal');
+            var cont = document.getElementById('announcement-content');
+            if (modal && cont) {
+                cont.innerHTML = content;
+                modal.style.display = 'flex';
+                modal.classList.remove('announcement-fadeout');
+                void modal.offsetWidth;
+                modal.classList.add('announcement-fadein');
+            }
+        }
+        function closeAnnouncement() {
+            var modal = document.getElementById('announcement-modal');
+            if (modal) {
+                modal.classList.remove('announcement-fadein');
+                modal.classList.add('announcement-fadeout');
+                setTimeout(function() {
+                    modal.style.display = 'none';
+                }, 350);
+            }
+            localStorage.setItem('announcement_shown', '1');
+        }
 
         function showMainContent() {
-            const welcome = document.getElementById('welcome');
-            const mainContent = document.getElementById('mainContent');
-            const downloadPage = document.getElementById('downloadPage');
-            const noticePage = document.getElementById('noticePage');
+            var welcome = document.getElementById('welcome');
+            var mainContent = document.getElementById('mainContent');
             if (welcome) {
                 welcome.classList.add('welcome-hide');
-                setTimeout(() => {
+                setTimeout(function() {
                     welcome.style.display = 'none';
-                    mainContent.classList.add('show');
-                    if (downloadPage) downloadPage.style.display = 'none';
-                    if (noticePage) noticePage.style.display = 'none';
+                    if (mainContent) {
+                        mainContent.classList.add('show');
+                        mainContent.style.display = 'block';
+                    }
                 }, 500);
-            } else {
-                // 如果没有欢迎页（如通过hash跳转），直接显示主页面
+            } else if (mainContent) {
                 mainContent.classList.add('show');
-                if (downloadPage) downloadPage.style.display = 'none';
-                if (noticePage) noticePage.style.display = 'none';
+                mainContent.style.display = 'block';
             }
         }
 
         function showDownloadPage() {
-            document.getElementById('mainContent').style.display = 'none';
-            const downloadPage = document.getElementById('downloadPage');
-            const noticePage = document.getElementById('noticePage');
-            downloadPage.style.display = 'block';
-            if (noticePage) noticePage.style.display = 'none';
-            setTimeout(() => {
+            var mainContent = document.getElementById('mainContent');
+            var downloadPage = document.getElementById('downloadPage');
+            var noticePage = document.getElementById('noticePage');
+            if (mainContent) {
+                mainContent.classList.remove('show');
+                mainContent.style.display = 'none';
+            }
+            if (noticePage) {
+                noticePage.classList.remove('show');
+                noticePage.style.display = 'none';
+            }
+            if (downloadPage) {
                 downloadPage.classList.add('show');
-            }, 10);
+                downloadPage.style.display = 'block';
+            }
         }
 
         function showNoticePage() {
-            document.getElementById('mainContent').style.display = 'none';
-            document.getElementById('downloadPage').style.display = 'none';
-            const noticePage = document.getElementById('noticePage');
-            noticePage.style.display = 'block';
-            setTimeout(() => {
+            var mainContent = document.getElementById('mainContent');
+            var downloadPage = document.getElementById('downloadPage');
+            var noticePage = document.getElementById('noticePage');
+            if (mainContent) {
+                mainContent.classList.remove('show');
+                mainContent.style.display = 'none';
+            }
+            if (downloadPage) {
+                downloadPage.classList.remove('show');
+                downloadPage.style.display = 'none';
+            }
+            if (noticePage) {
                 noticePage.classList.add('show');
-            }, 10);
+                noticePage.style.display = 'block';
+            }
         }
 
         function backToMain() {
-            const downloadPage = document.getElementById('downloadPage');
-            const noticePage = document.getElementById('noticePage');
-            if (downloadPage) downloadPage.classList.remove('show');
-            if (noticePage) noticePage.classList.remove('show');
-            setTimeout(() => {
-                if (downloadPage) downloadPage.style.display = 'none';
-                if (noticePage) noticePage.style.display = 'none';
-                const mainContent = document.getElementById('mainContent');
+            var mainContent = document.getElementById('mainContent');
+            var downloadPage = document.getElementById('downloadPage');
+            var noticePage = document.getElementById('noticePage');
+            if (downloadPage) {
+                downloadPage.classList.remove('show');
+                downloadPage.style.display = 'none';
+            }
+            if (noticePage) {
+                noticePage.classList.remove('show');
+                noticePage.style.display = 'none';
+            }
+            if (mainContent) {
+                mainContent.classList.add('show');
                 mainContent.style.display = 'block';
-                setTimeout(() => {
-                    mainContent.classList.add('show');
-                }, 10);
-            }, 400);
-        }
-
-        // 新增：进入开发须知时添加动画
-        function openNotice() {
-            const url = "dev_notice.html";
-            const win = window.open(url, "_blank");
-            // 尝试在新窗口加载后添加动画类（需dev_notice.html支持）
-            if (win) {
-                win.onload = function() {
-                    try {
-                        win.document.body.classList.add('notice-animate');
-                    } catch (e) {}
-                }
             }
         }
-
-        // 检查视频是否能播放，不能则隐藏视频，显示纯色背景
-        document.addEventListener('DOMContentLoaded', function() {
-            var video = document.getElementById('globalBgVideo');
-            if (video) {
-                video.onerror = function() {
-                    video.style.display = 'none';
-                    document.body.style.backgroundColor = '#e0f7fa';
-                };
-            }
-        });
-
-        // 樱花飘落特效
-        const canvas = document.getElementById('sakura-canvas');
-        const ctx = canvas.getContext('2d');
-        let width = window.innerWidth;
-        let height = window.innerHeight;
-        canvas.width = width;
-        canvas.height = height;
-
-        function randomBetween(a, b) {
-            return a + Math.random() * (b - a);
-        }
-
-        function SakuraPetal() {
-            this.x = randomBetween(0, width);
-            this.y = randomBetween(-height, 0);
-            this.radius = randomBetween(8, 16);
-            this.speedY = randomBetween(1, 2.5);
-            this.speedX = randomBetween(-0.5, 0.5);
-            this.angle = randomBetween(0, 2 * Math.PI);
-            this.angleSpeed = randomBetween(0.01, 0.03);
-            this.opacity = randomBetween(0.6, 1);
-        }
-        SakuraPetal.prototype.update = function() {
-            this.x += this.speedX;
-            this.y += this.speedY;
-            this.angle += this.angleSpeed;
-            if (this.y > height + 20) {
-                this.x = randomBetween(0, width);
-                this.y = randomBetween(-40, -10);
-            }
-            if (this.x < -20) this.x = width + 20;
-            if (this.x > width + 20) this.x = -20;
-        };
-        SakuraPetal.prototype.draw = function(ctx) {
-            ctx.save();
-            ctx.globalAlpha = this.opacity;
-            ctx.translate(this.x, this.y);
-            ctx.rotate(this.angle);
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            for (let i = 0; i < 5; i++) {
-                ctx.quadraticCurveTo(
-                    this.radius * 0.5,
-                    this.radius * 0.5,
-                    Math.cos((i * 2 * Math.PI) / 5) * this.radius,
-                    Math.sin((i * 2 * Math.PI) / 5) * this.radius
-                );
-            }
-            ctx.closePath();
-            ctx.fillStyle = 'rgba(255,182,193,0.85)';
-            ctx.fill();
-            ctx.restore();
-        };
-
-        let petals = [];
-        for (let i = 0; i < 30; i++) {
-            petals.push(new SakuraPetal());
-        }
-
-        function animate() {
-            ctx.clearRect(0, 0, width, height);
-            for (let petal of petals) {
-                petal.update();
-                petal.draw(ctx);
-            }
-            requestAnimationFrame(animate);
-        }
-        animate();
-
-        window.addEventListener('resize', function() {
-            width = window.innerWidth;
-            height = window.innerHeight;
-            canvas.width = width;
-            canvas.height = height;
-        });
     </script>
 </body>
 </html>
