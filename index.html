@@ -2,9 +2,16 @@
 <html lang="zh-cn">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>一思数据</title>
     <link rel="icon" href="indexphoto.jpg" type="image/jpeg" sizes="256x256">
     <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             background-color: #e0f7fa;
             color: #006064;
@@ -12,14 +19,7 @@
             margin: 0;
             padding: 0;
         }
-        body, html {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
         header {
-            /* 顶部渐变，向下更自然地变透明 */
             background: linear-gradient(
                 180deg,
                 #e0f7fa 0%,
@@ -45,20 +45,21 @@
         }
         main {
             position: absolute;
-            top: 110px; /* header高度，可根据实际header高度调整 */
-            bottom: 60px; /* footer高度，可根据实际footer高度调整 */
+            top: 110px;
+            bottom: 60px;
             left: 0;
             right: 0;
             overflow-y: auto;
+            width: 100%;
             max-width: 800px;
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: 40px 8px;
             text-align: center;
             background: transparent;
         }
         .welcome-img {
             width: 220px;
-            max-width: 90%;
+            max-width: 90vw;
             margin: 30px auto 0 auto;
             display: block;
             border-radius: 12px;
@@ -74,11 +75,12 @@
             cursor: pointer;
             transition: background 0.3s, opacity 0.3s;
             margin-top: 30px;
-            opacity: 0.6;
+            opacity: 0.9;
+            min-width: 120px;
         }
         .enter-btn:hover {
             background-color: #00838f;
-            opacity: 0.8;
+            opacity: 1;
         }
         .main-content {
             display: none;
@@ -111,7 +113,6 @@
             }
         }
         footer {
-            /* 底部渐变，向上更自然地变透明 */
             background: linear-gradient(
                 0deg,
                 #e0f7fa 0%,
@@ -129,9 +130,6 @@
             left: 0;
             z-index: 10;
         }
-        .notice-animate {
-            animation: fadeInUp 0.8s;
-        }
         /* 公告弹窗动画样式 */
         @keyframes modalFadeIn {
             from { opacity: 0; transform: scale(0.95);}
@@ -146,6 +144,14 @@
         }
         #announcement-modal.announcement-fadeout {
             animation: modalFadeOut 0.35s forwards;
+        }
+        /* 响应式优化 */
+        @media (max-width: 600px) {
+            .main-title { font-size: 1.5em; }
+            main { padding: 16px 2vw; }
+            .welcome-img { width: 90vw; }
+            .enter-btn { font-size: 1em; padding: 10px 0; width: 90vw; }
+            .main-content { padding: 0; }
         }
     </style>
 </head>
