@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>一思数据</title>
+    <style>
+        body {
+            background-color: #e0f7fa;
+            color: #006064;
+            font-family: "微软雅黑", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #00bcd4;
+            color: #fff;
+            padding: 30px 0 20px 0;
+            text-align: center;
+        }
+        .main-title {
+            font-size: 2.5em;
+            font-style: italic;
+            margin: 0;
+            letter-spacing: 2px;
+        }
+        main {
+            padding: 40px 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .welcome-img {
+            width: 220px;
+            max-width: 90%;
+            margin: 30px auto 0 auto;
+            display: block;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,188,212,0.12);
+        }
+        .enter-btn {
+            background-color: #0097a7;
+            color: #fff;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 4px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 30px;
+        }
+        .enter-btn:hover {
+            background-color: #00838f;
+        }
+        .main-content {
+            display: none;
+            margin-top: 10px;
+            opacity: 0;
+            transition: opacity 0.8s;
+        }
+        .main-content.show {
+            display: block;
+            opacity: 1;
+            animation: fadeInUp 0.8s;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .welcome-hide {
+            animation: fadeOut 0.5s forwards;
+        }
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+        }
+        footer {
+            background-color: #00bcd4;
+            color: #fff;
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+            left: 0;
+        }
+        .notice-animate {
+            animation: fadeInUp 0.8s;
+        }
+    </style>
+</head>
+<body>
+    <!-- 樱花飘落特效canvas -->
+    <canvas id="sakura-canvas" style="position:fixed;left:0;top:0;width:100vw;height:100vh;pointer-events:none;z-index:0;"></canvas>
+    <header>
+        <h1 class="main-title"><i>一思数据</i></h1>
+    </header>
+    <main>
+        <div id="welcome">
+            <img src="indexphoto.jpg" alt="一思数据图片" class="welcome-img">
+            <button class="enter-btn" onclick="showMainContent()">进入主网站</button>
+        </div>
+        <div id="mainContent" class="main-content">
+            <h2 style="margin-top:0;">欢迎来到一思数据主界面</h2>
+            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; margin-top: 30px;">
+                <!-- Bilibili主页模块 -->
+                <div style="background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,188,212,0.08); padding:24px 32px; min-width:220px; max-width:300px; flex:1;">
+                    <h3 style="color:#0097a7; margin-top:0;">Bilibili主页</h3>
+                    <p>访问我的Bilibili主页，获取更多视频内容</p>
+                    <a href="https://space.bilibili.com/547783759" target="_blank" style="color:#fff; background:#00bcd4; padding:8px 18px; border-radius:4px; text-decoration:none; display:inline-block;">前往B站主页</a>
+                </div>
+                <!-- 文件下载模块 -->
+                <div style="background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,188,212,0.08); padding:24px 32px; min-width:220px; max-width:300px; flex:1;">
+                    <h3 style="color:#0097a7; margin-top:0;">文件下载</h3>
+                    <p>下载相关资料和工具文件</p>
+                    <a href="javascript:void(0);" onclick="showDownloadPage()" style="color:#fff; background:#00bcd4; padding:8px 18px; border-radius:4px; text-decoration:none; display:inline-block;">进入下载页</a>
+                </div>
+                <!-- 开发须知模块 -->
+                <div style="background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,188,212,0.08); padding:24px 32px; min-width:220px; max-width:300px; flex:1;">
+                    <h3 style="color:#0097a7; margin-top:0;">开发须知</h3>
+                    <p>用户使用协议</p>
+                    <a href="dev_notice.html" onclick="openNotice();return false;" target="_blank" style="color:#fff; background:#00bcd4; padding:8px 18px; border-radius:4px; text-decoration:none; display:inline-block;">查看开发须知</a>
+                </div>
+            </div>
+        </div>
+        <!-- 下载页面 -->
+        <div id="downloadPage" class="main-content" style="display:none;">
+            <div style="text-align:left;">
+                <button onclick="backToMain()" style="background:none;border:none;color:#0097a7;font-size:1.5em;cursor:pointer;padding:0 0 10px 0;">
+                    &#8592; 返回
+                </button>
+            </div>
+            <h2 style="margin-top:0;">文件下载</h2>
+            <ul style="list-style:none;padding:0;">
+                <li style="margin:18px 0;">
+                    <a href="https://www.123912.com/s/RJIgTd-RiYxv" style="color:#0097a7;text-decoration:underline;" download target="_blank">ubantu镜像文件</a>
+                </li>
+                <li style="margin:18px 0;">
+                    <a href="download/yourfile2.pdf" style="color:#0097a7;text-decoration:underline;" download target="_blank">文件2.pdf</a>
+                </li>
+            </ul>
+        </div>
+    </main>
+    <footer>
+        &copy; 2025 一思数据 | 联系我们：<a href="mailto:onemiss0628@163.com" style="color:#fff;text-decoration:underline;">onemiss0628@163.com</a>
+    </footer>
+    <script>
+        // 进入页面时自动添加动画
+        window.onload = function() {
+            if (window.location.hash === "#main") {
+                showMainContent();
+            }
+        };
+
+        function showMainContent() {
+            const welcome = document.getElementById('welcome');
+            const mainContent = document.getElementById('mainContent');
+            const downloadPage = document.getElementById('downloadPage');
+            if (welcome) {
+                welcome.classList.add('welcome-hide');
+                setTimeout(() => {
+                    welcome.style.display = 'none';
+                    mainContent.classList.add('show');
+                    if (downloadPage) downloadPage.style.display = 'none';
+                }, 500);
+            } else {
+                // 如果没有欢迎页（如通过hash跳转），直接显示主页面
+                mainContent.classList.add('show');
+                if (downloadPage) downloadPage.style.display = 'none';
+            }
+        }
+
+        function showDownloadPage() {
+            document.getElementById('mainContent').style.display = 'none';
+            const downloadPage = document.getElementById('downloadPage');
+            downloadPage.style.display = 'block';
+            setTimeout(() => {
+                downloadPage.classList.add('show');
+            }, 10);
+        }
+
+        function backToMain() {
+            const downloadPage = document.getElementById('downloadPage');
+            downloadPage.classList.remove('show');
+            setTimeout(() => {
+                downloadPage.style.display = 'none';
+                const mainContent = document.getElementById('mainContent');
+                mainContent.style.display = 'block';
+                setTimeout(() => {
+                    mainContent.classList.add('show');
+                }, 10);
+            }, 400);
+        }
+
+        // 新增：进入开发须知时添加动画
+        function openNotice() {
+            const url = "dev_notice.html";
+            const win = window.open(url, "_blank");
+            // 尝试在新窗口加载后添加动画类（需dev_notice.html支持）
+            if (win) {
+                win.onload = function() {
+                    try {
+                        win.document.body.classList.add('notice-animate');
+                    } catch (e) {}
+                }
+            }
+        }
+
+        // 樱花飘落特效
+        const canvas = document.getElementById('sakura-canvas');
+        const ctx = canvas.getContext('2d');
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+
+        function randomBetween(a, b) {
+            return a + Math.random() * (b - a);
+        }
+
+        function SakuraPetal() {
+            this.x = randomBetween(0, width);
+            this.y = randomBetween(-height, 0);
+            this.radius = randomBetween(8, 16);
+            this.speedY = randomBetween(1, 2.5);
+            this.speedX = randomBetween(-0.5, 0.5);
+            this.angle = randomBetween(0, 2 * Math.PI);
+            this.angleSpeed = randomBetween(0.01, 0.03);
+            this.opacity = randomBetween(0.6, 1);
+        }
+        SakuraPetal.prototype.update = function() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            this.angle += this.angleSpeed;
+            if (this.y > height + 20) {
+                this.x = randomBetween(0, width);
+                this.y = randomBetween(-40, -10);
+            }
+            if (this.x < -20) this.x = width + 20;
+            if (this.x > width + 20) this.x = -20;
+        };
+        SakuraPetal.prototype.draw = function(ctx) {
+            ctx.save();
+            ctx.globalAlpha = this.opacity;
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.angle);
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            for (let i = 0; i < 5; i++) {
+                ctx.quadraticCurveTo(
+                    this.radius * 0.5,
+                    this.radius * 0.5,
+                    Math.cos((i * 2 * Math.PI) / 5) * this.radius,
+                    Math.sin((i * 2 * Math.PI) / 5) * this.radius
+                );
+            }
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(255,182,193,0.85)';
+            ctx.fill();
+            ctx.restore();
+        };
+
+        let petals = [];
+        for (let i = 0; i < 30; i++) {
+            petals.push(new SakuraPetal());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            for (let petal of petals) {
+                petal.update();
+                petal.draw(ctx);
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        window.addEventListener('resize', function() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        });
+    </script>
+</body>
+</html>
