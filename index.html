@@ -12,6 +12,12 @@
             margin: 0;
             padding: 0;
         }
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         header {
             /* 顶部渐变，向下更自然地变透明 */
             background: linear-gradient(
@@ -25,6 +31,11 @@
             color: #0097a7;
             padding: 30px 0 20px 0;
             text-align: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 10;
         }
         .main-title {
             font-size: 2.5em;
@@ -33,10 +44,17 @@
             letter-spacing: 2px;
         }
         main {
-            padding: 40px 20px;
+            position: absolute;
+            top: 110px; /* header高度，可根据实际header高度调整 */
+            bottom: 60px; /* footer高度，可根据实际footer高度调整 */
+            left: 0;
+            right: 0;
+            overflow-y: auto;
             max-width: 800px;
             margin: 0 auto;
+            padding: 40px 20px;
             text-align: center;
+            background: transparent;
         }
         .welcome-img {
             width: 220px;
@@ -109,6 +127,7 @@
             width: 100%;
             bottom: 0;
             left: 0;
+            z-index: 10;
         }
         .notice-animate {
             animation: fadeInUp 0.8s;
