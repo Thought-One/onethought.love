@@ -19,30 +19,6 @@
             margin: 0;
             padding: 0;
         }
-        header {
-            background: linear-gradient(
-                180deg,
-                #e0f7fa 0%,
-                #e0f7fa 40%,
-                rgba(224,247,250,0.7) 70%,
-                rgba(224,247,250,0.3) 90%,
-                rgba(224,247,250,0) 100%
-            );
-            color: #0097a7;
-            padding: 30px 0 20px 0;
-            text-align: center;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 10;
-        }
-        .main-title {
-            font-size: 2.5em;
-            font-style: italic;
-            margin: 0;
-            letter-spacing: 2px;
-        }
         main {
             position: absolute;
             top: 110px;
@@ -57,13 +33,138 @@
             text-align: center;
             background: transparent;
         }
-        .welcome-img {
-            width: 220px;
-            max-width: 90vw;
-            margin: 30px auto 0 auto;
+        /* 快捷栏样式 */
+        #quick-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 101;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 18px;
+            padding: 80px 8px 16px 8px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 0 12px 12px 0;
+            box-shadow: 2px 4px 16px rgba(0,188,212,0.08);
+            transition: transform 0.3s cubic-bezier(.4,2,.6,1), opacity 0.3s;
+        }
+        #quick-bar.closed {
+            transform: translateX(-120%);
+            opacity: 0.2;
+            pointer-events: none;
+        }
+        #quick-bar a {
+            color: #0097a7;
+            font-size: 1.1em;
+            text-decoration: none;
+            font-family: '微软雅黑', Arial, sans-serif;
+            font-style: italic;
+            margin-bottom: 6px;
+            transition: color 0.2s;
             display: block;
-            border-radius: 12px;
-            box-shadow: 0 4px 16px rgba(0,188,212,0.12);
+            padding: 4px 0 4px 8px;
+        }
+        #quick-bar a:hover {
+            color: #00838f;
+        }
+        /* 展开/关闭按钮样式 */
+        #quick-bar-toggle {
+            position: fixed;
+            top: 24px;
+            left: 16px;
+            z-index: 102;
+            width: 44px;
+            height: 44px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0,188,212,0.10);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            outline: none;
+            transition: background 0.2s;
+        }
+        #quick-bar-toggle:hover {
+            background: #e0f7fa;
+        }
+        .quick-bar-icon {
+            width: 24px;
+            height: 24px;
+            display: block;
+        }
+        .quick-bar-icon-bar {
+            width: 22px;
+            height: 3px;
+            background: #0097a7;
+            border-radius: 2px;
+            margin: 3px 0;
+            transition: all 0.3s;
+        }
+        /* 关闭时动画效果 */
+        #quick-bar.closed ~ #quick-bar-toggle .quick-bar-icon-bar:nth-child(1) {
+            transform: translateY(6px) rotate(45deg);
+        }
+        #quick-bar.closed ~ #quick-bar-toggle .quick-bar-icon-bar:nth-child(2) {
+            opacity: 0;
+        }
+        #quick-bar.closed ~ #quick-bar-toggle .quick-bar-icon-bar:nth-child(3) {
+            transform: translateY(-6px) rotate(-45deg);
+        }
+        @media (max-width: 600px) {
+            #quick-bar {
+                padding-top: 70px;
+                gap: 12px;
+            }
+            #quick-bar-toggle {
+                top: 12px;
+                left: 8px;
+                width: 38px;
+                height: 38px;
+            }
+            .quick-bar-icon {
+                width: 18px;
+                height: 18px;
+            }
+            .quick-bar-icon-bar {
+                width: 16px;
+                height: 2px;
+            }
+        }
+        .head-flex {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            margin: 32px 0 24px 0;
+        }
+        .logo-title {
+            font-size: 2em;
+            color: #0097a7;
+            font-family: '微软雅黑', Arial, sans-serif;
+            font-style: italic;
+            font-weight: bold;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+        }
+        .logo-title-line {
+            display: inline-block;
+            width: 32px;
+            height: 2px;
+            background: #bbb;
+            margin: 0 10px;
+            vertical-align: middle;
+            border-radius: 1px;
+        }
+        .welcome-img {
+            width: 100px;
+            max-width: 40vw;
+            display: block;
+            margin: 0;
         }
         .enter-btn {
             background-color: #0097a7;
@@ -147,15 +248,36 @@
         }
         /* 响应式优化 */
         @media (max-width: 600px) {
-            .main-title { font-size: 1.5em; }
             main { padding: 16px 2vw; }
             .welcome-img { width: 90vw; }
             .enter-btn { font-size: 1em; padding: 10px 0; width: 90vw; }
             .main-content { padding: 0; }
         }
     </style>
+    <div class="head-flex">
+        <span class="logo-title">
+            一思数据
+            <span class="logo-title-line"></span>
+        </span>
+        <img src="indexphoto.jpg" alt="indexphoto" class="welcome-img">
+    </div>
 </head>
 <body style="background-color: #e0f7fa;">
+    <!-- 快捷栏展开/关闭按钮 -->
+    <button id="quick-bar-toggle" aria-label="展开/关闭快捷栏" onclick="toggleQuickBar()">
+        <span class="quick-bar-icon">
+            <span class="quick-bar-icon-bar"></span>
+            <span class="quick-bar-icon-bar"></span>
+            <span class="quick-bar-icon-bar"></span>
+        </span>
+    </button>
+    <!-- 快捷栏 -->
+    <div id="quick-bar">
+        <a href="javascript:void(0);" onclick="showMainContent(true)">首页</a>
+        <a href="javascript:void(0);" onclick="showDownloadPage(true)">文件下载</a>
+        <a href="javascript:void(0);" onclick="showNoticePage(true)">用户须知</a>
+        <a href="https://space.bilibili.com/547783759" target="_blank">B站主页</a>
+    </div>
     <!-- 全局视频背景，支持回退到纯色背景 -->
     <video id="globalBgVideo" autoplay loop muted playsinline style="position:fixed;left:0;top:0;width:100vw;height:100vh;object-fit:cover;z-index:-1;display:block;background:#e0f7fa;">
         <source src="vidio.mp4" type="video/mp4">
@@ -163,20 +285,8 @@
     </video>
     <!-- 樱花飘落特效canvas -->
     <canvas id="sakura-canvas" style="position:fixed;left:0;top:0;width:100vw;height:100vh;pointer-events:none;z-index:0;"></canvas>
-    <header>
-        <h1 class="main-title" style="font-family: 'Brush Script MT', 'Segoe Script', cursive, '微软雅黑', Arial, sans-serif; font-size:3em; font-style:italic; letter-spacing:4px; margin:20px auto 0 auto; text-align:center;">
-            一思数据
-        </h1>
-    </header>
     <main>
-        <div id="welcome">
-            <img src="indexphoto.jpg" alt="一思数据图片" class="welcome-img">
-            <button class="enter-btn" onclick="showMainContent()">进入主网站</button>
-        </div>
-        <div id="mainContent" class="main-content">
-            <h2 style="margin-top:0; background:rgba(255,255,255,0.6); border-radius:10px; box-shadow:0 2px 8px rgba(0,188,212,0.08); padding:18px 0 14px 0; max-width:800px; margin-left:auto; margin-right:auto;">
-                欢迎来到一思数据
-            </h2>
+        <div id="mainContent" class="main-content show" style="display:block;">
             <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; margin-top: 30px;">
                 <!-- Bilibili主页模块 -->
                 <div style="background:rgba(255,255,255,0.6); border-radius:10px; box-shadow:0 2px 8px rgba(0,188,212,0.08); padding:24px 32px; min-width:220px; max-width:300px; flex:1;">
@@ -188,7 +298,7 @@
                 <div style="background:rgba(255,255,255,0.6); border-radius:10px; box-shadow:0 2px 8px rgba(0,188,212,0.08); padding:24px 32px; min-width:220px; max-width:300px; flex:1;">
                     <h3 style="color:#0097a7; margin-top:0;">文件下载</h3>
                     <p>下载相关资料和工具文件</p>
-                    <a href="javascript:void(0);" onclick="showDownloadPage()" style="color:#fff; background:#00bcd4; padding:8px 18px; border-radius:4px; text-decoration:none; display:inline-block;">进入下载页</a>
+                    <a href="javascript:void(0);" onclick="showDownloadPage(true)" style="color:#fff; background:#00bcd4; padding:8px 18px; border-radius:4px; text-decoration:none; display:inline-block;">进入下载页</a>
                 </div>
             </div>
         </div>
@@ -199,7 +309,7 @@
                 border-radius:12px;box-shadow:0 4px 16px rgba(0,188,212,0.10);
                 min-height:60vh;">
                 <div style="text-align:left;">
-                    <button onclick="backToMain()" style="background:none;border:none;color:#0097a7;font-size:1.5em;cursor:pointer;padding:0 0 10px 0;">
+                    <button onclick="showMainContent(true)" style="background:none;border:none;color:#0097a7;font-size:1.5em;cursor:pointer;padding:0 0 10px 0;">
                         &#8592; 返回
                     </button>
                 </div>
@@ -218,7 +328,7 @@
         <div id="noticePage" class="main-content" style="display:none;">
             <div class="container" style="background:rgba(255,255,255,0.6); border-radius:12px; box-shadow:0 4px 16px rgba(0,188,212,0.10); max-width:700px; margin:40px auto 0 auto; padding:36px 32px 32px 32px; text-align:left;">
                 <div>
-                    <button onclick="backToMain()" style="background:none;border:none;color:#0097a7;font-size:1.5em;cursor:pointer;padding:0 0 10px 0;">
+                    <button onclick="showMainContent(true)" style="background:none;border:none;color:#0097a7;font-size:1.5em;cursor:pointer;padding:0 0 10px 0;">
                         &#8592; 返回
                     </button>
                 </div>
@@ -273,7 +383,7 @@
         gap: 14px;
         pointer-events: none;
     ">
-        <a href="javascript:void(0);" onclick="showNoticePage()" style="
+        <a href="javascript:void(0);" onclick="showNoticePage(true)" style="
             color: #0097a7;
             background: none;
             border-radius: 0;
@@ -320,14 +430,6 @@
             Developed by OneThought
         </div>
     </footer>
-    <!-- 在</footer>后添加公告弹窗HTML -->
-    <div id="announcement-modal" style="display:none;position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:999;background:rgba(0,0,0,0.25);align-items:center;justify-content:center;">
-        <div style="background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,188,212,0.18);padding:32px 28px;max-width:90vw;max-height:80vh;overflow:auto;min-width:260px;">
-            <h2 style="color:#0097a7;margin-top:0;font-size:1.3em;">公告</h2>
-            <div id="announcement-content" style="color:#006064;font-size:1.08em;line-height:1.7;"></div>
-            <button onclick="closeAnnouncement()" style="margin-top:18px;background:#0097a7;color:#fff;border:none;padding:8px 24px;border-radius:4px;cursor:pointer;">我知道了</button>
-        </div>
-    </div>
     <!-- 在 body 末尾添加（或替换原公告 JS 部分） -->
     <script id="ad-json" type="application/json">
     {
@@ -340,19 +442,82 @@
             localStorage.removeItem('announcement_shown');
         });
 
-        window.addEventListener('DOMContentLoaded', function() {
-            var welcome = document.getElementById('welcome');
+        // 页面切换函数，带历史记录
+        function showMainContent(push) {
             var mainContent = document.getElementById('mainContent');
-            // 默认显示欢迎页，隐藏主内容
-            if (welcome) {
-                welcome.style.display = '';
-                welcome.classList.remove('welcome-hide');
+            var downloadPage = document.getElementById('downloadPage');
+            var noticePage = document.getElementById('noticePage');
+            if (downloadPage) {
+                downloadPage.classList.remove('show');
+                downloadPage.style.display = 'none';
             }
+            if (noticePage) {
+                noticePage.classList.remove('show');
+                noticePage.style.display = 'none';
+            }
+            if (mainContent) {
+                mainContent.classList.add('show');
+                mainContent.style.display = 'block';
+            }
+            if (push) history.pushState({page: 'main'}, '', '#main');
+        }
+
+        function showDownloadPage(push) {
+            var mainContent = document.getElementById('mainContent');
+            var downloadPage = document.getElementById('downloadPage');
+            var noticePage = document.getElementById('noticePage');
             if (mainContent) {
                 mainContent.classList.remove('show');
                 mainContent.style.display = 'none';
             }
+            if (noticePage) {
+                noticePage.classList.remove('show');
+                noticePage.style.display = 'none';
+            }
+            if (downloadPage) {
+                downloadPage.classList.add('show');
+                downloadPage.style.display = 'block';
+            }
+            if (push) history.pushState({page: 'download'}, '', '#download');
+        }
 
+        function showNoticePage(push) {
+            var mainContent = document.getElementById('mainContent');
+            var downloadPage = document.getElementById('downloadPage');
+            var noticePage = document.getElementById('noticePage');
+            if (mainContent) {
+                mainContent.classList.remove('show');
+                mainContent.style.display = 'none';
+            }
+            if (downloadPage) {
+                downloadPage.classList.remove('show');
+                downloadPage.style.display = 'none';
+            }
+            if (noticePage) {
+                noticePage.classList.add('show');
+                noticePage.style.display = 'block';
+            }
+            if (push) history.pushState({page: 'notice'}, '', '#notice');
+        }
+
+        // 监听浏览器回退/前进
+        window.addEventListener('popstate', function() {
+            if (location.hash === '#download') {
+                showDownloadPage(false);
+            } else if (location.hash === '#notice') {
+                showNoticePage(false);
+            } else {
+                showMainContent(false);
+            }
+        });
+
+        // 页面初始加载
+        window.addEventListener('DOMContentLoaded', function() {
+            var mainContent = document.getElementById('mainContent');
+            if (mainContent) {
+                mainContent.classList.add('show');
+                mainContent.style.display = 'block';
+            }
             // 首次访问弹出公告
             if (!localStorage.getItem('announcement_shown')) {
                 var adJson = document.getElementById('ad-json');
@@ -364,6 +529,14 @@
                         }
                     } catch(e){}
                 }
+            }
+            // 根据hash显示对应页面
+            if (location.hash === '#download') {
+                showDownloadPage(false);
+            } else if (location.hash === '#notice') {
+                showNoticePage(false);
+            } else {
+                showMainContent(false);
             }
         });
 
@@ -390,75 +563,13 @@
             localStorage.setItem('announcement_shown', '1');
         }
 
-        function showMainContent() {
-            var welcome = document.getElementById('welcome');
-            var mainContent = document.getElementById('mainContent');
-            if (welcome) {
-                welcome.classList.add('welcome-hide');
-                setTimeout(function() {
-                    welcome.style.display = 'none';
-                    if (mainContent) {
-                        mainContent.classList.add('show');
-                        mainContent.style.display = 'block';
-                    }
-                }, 500);
-            } else if (mainContent) {
-                mainContent.classList.add('show');
-                mainContent.style.display = 'block';
-            }
-        }
-
-        function showDownloadPage() {
-            var mainContent = document.getElementById('mainContent');
-            var downloadPage = document.getElementById('downloadPage');
-            var noticePage = document.getElementById('noticePage');
-            if (mainContent) {
-                mainContent.classList.remove('show');
-                mainContent.style.display = 'none';
-            }
-            if (noticePage) {
-                noticePage.classList.remove('show');
-                noticePage.style.display = 'none';
-            }
-            if (downloadPage) {
-                downloadPage.classList.add('show');
-                downloadPage.style.display = 'block';
-            }
-        }
-
-        function showNoticePage() {
-            var mainContent = document.getElementById('mainContent');
-            var downloadPage = document.getElementById('downloadPage');
-            var noticePage = document.getElementById('noticePage');
-            if (mainContent) {
-                mainContent.classList.remove('show');
-                mainContent.style.display = 'none';
-            }
-            if (downloadPage) {
-                downloadPage.classList.remove('show');
-                downloadPage.style.display = 'none';
-            }
-            if (noticePage) {
-                noticePage.classList.add('show');
-                noticePage.style.display = 'block';
-            }
-        }
-
-        function backToMain() {
-            var mainContent = document.getElementById('mainContent');
-            var downloadPage = document.getElementById('downloadPage');
-            var noticePage = document.getElementById('noticePage');
-            if (downloadPage) {
-                downloadPage.classList.remove('show');
-                downloadPage.style.display = 'none';
-            }
-            if (noticePage) {
-                noticePage.classList.remove('show');
-                noticePage.style.display = 'none';
-            }
-            if (mainContent) {
-                mainContent.classList.add('show');
-                mainContent.style.display = 'block';
+        // 快捷栏展开/关闭
+        function toggleQuickBar() {
+            var bar = document.getElementById('quick-bar');
+            if (bar.classList.contains('closed')) {
+                bar.classList.remove('closed');
+            } else {
+                bar.classList.add('closed');
             }
         }
     </script>
