@@ -1,0 +1,16 @@
+[
+  {
+    "name": "ubantu镜像文件",
+    "url": "https://www.123912.com/s/RJIgTd-RiYxv",
+    "desc": "官方Ubuntu系统镜像，适合虚拟机和物理机安装。",
+    "download": true,
+    "target": "_blank"
+  },
+  {
+    "name": "SkinsRestorer",
+    "url": "download/SkinsRestorer.jar",
+    "desc": "Minecraft皮肤还原插件，适用于服务端。",
+    "download": true,
+    "target": "_blank"
+  }
+]
