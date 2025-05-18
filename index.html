@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>一思数据</title>
+    <link rel="icon" href="res/indexphoto.jpg" type="image/jpeg" sizes="256x256">
+    <script>
+    // 兼容本地 file:// 协议，优先用本地变量渲染下载列表
+    window.downloadList = [
+      {
+        "name": "ubantu镜像文件",
+        "url": "files/ubantu.iso",
+        "desc": "官方Ubuntu系统镜像，适合虚拟机和物理机安装。",
+        "download": true,
+        "target": "_blank"
+      },
+      {
+        "name": "SkinsRestorer",
+        "url": "files/SkinsRestorer.jar",
+        "desc": "Minecraft皮肤还原插件，适用于服务端。",
+        "download": true,
+        "target": "_blank"
+      }
+    ];
+    </script>
+    <script>
+    // 侧边栏鼠标悬停自动展开/收缩（整个侧边栏区域，离开后2秒收回）
+    (function(){
+        var bar = null;
+        var hoverTimer = null;
+        var leaveTimer = null;
+        window.addEventListener('DOMContentLoaded', function() {
+            bar = document.getElementById('quick-bar');
+            if (!bar) return;
+            bar.addEventListener('mouseenter', function() {
+                if (leaveTimer) { clearTimeout(leaveTimer); leaveTimer = null; }
+                if (hoverTimer) clearTimeout(hoverTimer);
+                if (bar.classList.contains('closed')) {
+                    hoverTimer = setTimeout(function() {
+                        if (bar.classList.contains('closed')) toggleQuickBar();
+                    }, 1000);
+                }
+            });
+            bar.addEventListener('mouseleave', function() {
+                if (hoverTimer) { clearTimeout(hoverTimer); hoverTimer = null; }
+                if (!bar.classList.contains('closed')) {
+                    leaveTimer = setTimeout(function() {
+                        if (!bar.classList.contains('closed')) toggleQuickBar();
+                    }, 2000);
+                }
+            });
+        });
+    })();
+    </script>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #e0f7fa;
+            color: #006064;
+            font-family: "微软雅黑", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        main {
+            position: absolute;
+            top: 110px;
+            bottom: 60px;
+            left: 0;
+            right: 0;
+            overflow-y: auto;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 8px;
+            text-align: center;
+            background: transparent;
+        }
+        /* 快捷栏样式 */
+        #quick-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 101;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 18px;
+            padding: 24px 8px 16px 8px;
+            background: rgba(255,255,255,0.8); /* 80% 透明度 */
+            border-radius: 0 12px 12px 0;
+            box-shadow: 2px 4px 16px rgba(0,188,212,0.08);
+            min-width: 7em; /* 7个汉字宽度，1em≈1汉字 */
+            max-width: 320px; /* 增大最大宽度，防止长内容被裁剪 */
+            width: max-content; /* 展开时自适应内容宽度 */
+            /* 动画时长变量，默认0.35s */
+            --bar-transition: 0.35s;
+            transition: width var(--bar-transition) cubic-bezier(.4,2,.6,1), background 0.2s;
+            overflow: hidden;
+        }
+        #quick-bar.closed {
+            width: 56px !important; /* 强制收缩宽度 */
+            min-width: 56px !important;
+            max-width: 56px !important;
+            background: rgba(255,255,255,0.7);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #quick-bar a {
+            color: #0097a7;
+            font-size: 1.1em;
+            text-decoration: none;
+            font-family: '微软雅黑', Arial, sans-serif;
+            font-style: italic;
+            margin-bottom: 6px;
+            transition: color 0.2s;
+            display: block;
+            padding: 4px 0 4px 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: opacity 0.2s;
+        }
+        #quick-bar a:hover {
+            color: #00838f;
+        }
+        #quick-bar.closed a {
+            opacity: 0;
+            pointer-events: none;
+        }
+        /* 融合的三条杠按钮样式 */
+        .quick-bar-toggle-inner {
+            width: 44px;
+            height: 44px;
+            margin: 0 auto 18px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.2s;
+            background: none;
+            border: none;
+            position: relative;
+        }
+        .quick-bar-toggle-inner:hover {
+            background: #f0f0f0;
+        }
+        .quick-bar-icon {
+            width: 24px;
+            height: 24px;
+            display: block;
+            position: relative;
+        }
+        .quick-bar-icon-bar {
+            width: 22px;
+            height: 3px;
+            background: #111;
+            border-radius: 2px;
+            margin: 3px 0;
+            transition: all 0.3s;
+            display: block;
+            position: relative;
+        }
+        #quick-bar.closed .quick-bar-icon-bar:nth-child(1) {
+            transform: translateY(6px) rotate(45deg);
+        }
+        #quick-bar.closed .quick-bar-icon-bar:nth-child(2) {
+            opacity: 0;
+        }
+        #quick-bar.closed .quick-bar-icon-bar:nth-child(3) {
+            transform: translateY(-6px) rotate(-45deg);
+        }
+        @media (max-width: 600px) {
+            #quick-bar {
+                padding-top: 70px;
+                gap: 12px;
+            }
+            .quick-bar-toggle-inner {
+                width: 38px;
+                height: 38px;
+            }
+            .quick-bar-icon {
+                width: 18px;
+                height: 18px;
+            }
+            .quick-bar-icon-bar {
+                width: 16px;
+                height: 2px;
+            }
+            main { padding: 16px 2vw; }
+            .welcome-img { width: 90vw; }
+            .enter-btn { font-size: 1em; padding: 10px 0; width: 90vw; }
+            .main-content { padding: 0; }
+        }
+        .head-flex {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            margin: 32px 0 24px 0;
+        }
+        .logo-title {
+            font-size: 2em;
+            color: #0097a7;
+            font-family: '微软雅黑', Arial, sans-serif;
+            font-style: italic;
+            font-weight: bold;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+        }
+        .logo-title-line {
+            display: inline-block;
+            width: 32px;
+            height: 2px;
+            background: #bbb;
+            margin: 0 10px;
+            vertical-align: middle;
+            border-radius: 1px;
+        }
+        .welcome-img {
+            width: 100px;
+            max-width: 40vw;
+            display: block;
+            margin: 0;
+        }
+        .enter-btn {
+            background-color: #0097a7;
+            color: #fff;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 4px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background 0.3s, opacity 0.3s;
+            margin-top: 30px;
+            opacity: 0.9;
+            min-width: 120px;
+        }
+        .enter-btn:hover {
+            background-color: #00838f;
+            opacity: 1;
+        }
+        .main-content {
+            display: none;
+            margin-top: 10px;
+            opacity: 0;
+            transition: opacity 0.8s;
+        }
+        .main-content.show {
+            display: block;
+            opacity: 1;
+            animation: fadeInUp 0.8s;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .welcome-hide {
+            animation: fadeOut 0.5s forwards;
+        }
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+        }
+        footer {
+            background: linear-gradient(
+                0deg,
+                #e0f7fa 0%,
+                #e0f7fa 40%,
+                rgba(224,247,250,0.7) 70%,
+                rgba(224,247,250,0.3) 90%,
+                rgba(224,247,250,0) 100%
+            );
+            color: #0097a7;
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+            left: 0;
+            z-index: 10;
+        }
+        /* 公告弹窗动画样式 */
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95);}
+            to   { opacity: 1; transform: scale(1);}
+        }
+        @keyframes modalFadeOut {
+            from { opacity: 1; transform: scale(1);}
+            to   { opacity: 0; transform: scale(0.95);}
+        }
+    </style>
+    <div class="head-flex">
+        <span class="logo-title">
+            一思数据
+            <span class="logo-title-line"></span>
+        </span>
+        <img src="res/indexphoto.jpg" alt="indexphoto" class="welcome-img">
+    </div>
+</head>
+<body style="background-color: #e0f7fa;">
+    <!-- 快捷栏 -->
+    <div id="quick-bar">
+        <div class="quick-bar-toggle-inner" onclick="toggleQuickBar()" title="展开/收起侧边栏">
+            <span class="quick-bar-icon">
+                <span class="quick-bar-icon-bar"></span>
+                <span class="quick-bar-icon-bar"></span>
+                <span class="quick-bar-icon-bar"></span>
+            </span>
+        </div>
+        <a href="javascript:void(0);" onclick="showMainContent(true)">首页</a>
+        <a href="javascript:void(0);" onclick="showDataCenter(true)">数据中心</a>
+    </div>
+    <!-- 全局视频背景，支持回退到纯色背景 -->
+    <video id="globalBgVideo" autoplay loop muted playsinline style="position:fixed;left:0;top:0;width:100vw;height:100vh;object-fit:cover;z-index:-1;display:block;background:#e0f7fa;">
+        <source src="res/vidio.mp4" type="video/mp4">
+        <!-- 如果不支持视频，自动显示body的背景色 -->
+    </video>
+    <!-- 樱花飘落特效canvas -->
+    <canvas id="sakura-canvas" style="position:fixed;left:0;top:0;width:100vw;height:100vh;pointer-events:none;z-index:0;"></canvas>
+    <main>
+        <div id="mainContent" class="main-content show" style="display:block;">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 30px; margin-top: 30px;">
+                <!-- Bilibili主页模块 居中 -->
+                <div style="background:rgba(255,255,255,0.6); border-radius:10px; box-shadow:0 2px 8px rgba(0,188,212,0.08); padding:24px 32px; min-width:220px; max-width:340px; margin:0 auto;">
+                    <h3 style="color:#0097a7; margin-top:0; text-align:center;">Bilibili主页</h3>
+                    <p style="text-align:center;">访问我的Bilibili主页，获取更多视频内容</p>
+                    <div style="display:flex;justify-content:center;">
+                        <a href="https://space.bilibili.com/547783759" target="_blank" style="color:#fff; background:#00bcd4; padding:8px 18px; border-radius:4px; text-decoration:none; display:inline-block;">前往B站主页</a>
+                    </div>
+                </div>
+                <!-- 公告窗口 -->
+                <div id="noticeBox" style="background:rgba(255,255,255,0.5);border-radius:10px;box-shadow:0 2px 8px rgba(0,188,212,0.08);padding:18px 24px;max-width:340px;width:100%;margin:0 auto;text-align:center;color:#006064;font-size:1.08em;"></div>
+            </div>
+        </div>
+        <!-- 数据中心页面，集成下载功能 -->
+        <div id="dataCenterPage" class="main-content" style="display:none; position:relative; overflow:hidden;">
+            <div style="position:relative;z-index:1;background:rgba(255,255,255,0.6);max-width:700px;margin:40px auto 40px auto;padding:36px 32px 32px 32px;border-radius:12px;box-shadow:0 4px 16px rgba(0,188,212,0.10);min-height:60vh;">
+                <div style="text-align:left;">
+                    <button onclick="showMainContent(true)" style="background:none;border:none;color:#0097a7;font-size:1.5em;cursor:pointer;padding:0 0 10px 0;">&#8592; 返回</button>
+                </div>
+                <h2 style="margin-top:0;">数据中心</h2>
+                <h3 style="color:#0097a7;">文件下载</h3>
+                <ul id="dataCenterDownloadList" style="list-style:none;padding:0;"></ul>
+            </div>
+        </div>
+    </main>
+    <!-- 右下角悬浮用户须知和赞助入口 -->
+    <div id="corner-links" style="
+        position: fixed;
+        right: 32px;
+        bottom: 90px;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 14px;
+        pointer-events: none;
+    ">
+        <a href="javascript:void(0);" id="userNoticeBtn" style="
+            color: #0097a7;
+            background: none;
+            border-radius: 0;
+            padding: 0;
+            font-size: 1.08em;
+            text-decoration: underline;
+            font-style: italic;
+            margin-bottom: 2px;
+            box-shadow: none;
+            pointer-events: auto;
+            transition: color 0.2s;
+            font-family: inherit;
+        " onmouseover="this.style.color='#00838f'" onmouseout="this.style.color='#0097a7'">
+            用户须知
+        </a>
+        <a href="https://ifdian.net/a/one_thought" target="_blank" style="
+            color: #0097a7;
+            background: none;
+            border-radius: 0;
+            padding: 0;
+            font-size: 1.08em;
+            text-decoration: underline;
+            font-style: italic;
+            box-shadow: none;
+            pointer-events: auto;
+            transition: color 0.2s;
+            font-family: inherit;
+        " onmouseover="this.style.color='#00838f'" onmouseout="this.style.color='#0097a7'">
+            赞助
+        </a>
+    </div>
+    <!-- 用户须知弹窗（模态框） -->
+    <div id="userNoticeModal" style="
+        display:none;
+        position:fixed;
+        left:0;top:0;width:100vw;height:100vh;
+        background:rgba(0,0,0,0.32);
+        z-index:9999;
+        align-items:center;
+        justify-content:center;
+        transition:background 0.3s;
+    ">
+        <div id="userNoticeContent" style="
+            background:rgba(255,255,255,0.98);
+            border-radius:14px;
+            box-shadow:0 6px 32px rgba(0,188,212,0.13);
+            max-width:92vw;
+            width:400px;
+            padding:32px 22px 22px 22px;
+            position:relative;
+            color:#006064;
+            font-size:1.08em;
+            line-height:1.7;
+            text-align:left;
+            animation: modalFadeIn 0.35s;
+        ">
+            <button onclick="closeUserNotice()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.5em;color:#0097a7;cursor:pointer;">&times;</button>
+            <h2 style="margin-top:0;color:#0097a7;font-size:1.25em;text-align:center;">用户须知</h2>
+            <div style="max-height:55vh;overflow-y:auto;font-size:1em;">
+                <ol style="padding-left:1.2em;">
+                    <li>本网站为公益性数据分享平台，所有资源仅供学习、研究与交流使用，严禁用于任何商业用途。</li>
+                    <li>下载和使用本站资源前，请确保已获得相关版权方授权，因个人使用造成的任何法律责任由用户自行承担。</li>
+                    <li>本站资源均来源于互联网或用户自愿分享，如有侵权请及时联系我们邮箱 onemiss0628@163.com 处理。</li>
+                    <li>请勿上传、传播违法违规内容，尊重知识产权，共同维护良好网络环境。</li>
+                    <li>本站不保证所有资源的完整性和可用性，下载前请自行甄别风险。</li>
+                    <li>如需商业合作或有任何建议，欢迎通过邮箱与我们联系。</li>
+                    <li>本站与心跳数据平台开展合作，部分数据由心跳数据平台授权提供，使用时请遵守相关平台规定。</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <style>
+    @media (max-width: 600px) {
+        #userNoticeContent {
+            width: 96vw !important;
+            padding: 18px 4vw 14px 4vw !important;
+            font-size: 0.98em !important;
+        }
+        #userNoticeModal {
+            align-items: flex-end !important;
+        }
+    }
+    #userNoticeModal {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    #userNoticeModal.hide {
+        animation: modalFadeOut 0.35s forwards;
+    }
+    </style>
+    <footer>
+        <div style="display:flex;align-items:center;justify-content:center;gap:24px;">
+            <span>
+                &copy; 2024-2025 一思数据 | 联系我们：
+                <a href="mailto:onemiss0628@163.com" style="color:#0097a7;text-decoration:underline;">onemiss0628@163.com</a>
+            </span>
+            <img src="res/logo.png" alt="一思数据LOGO" style="width:100px;height:auto;display:inline-block;">
+        </div>
+        <div style="margin-top:8px; color:#0097a7; font-size:0.95em; text-align:center;">
+            Make OneThought Great Again
+        </div>
+        <div style="margin-top:4px; color:#0097a7; font-size:0.95em; text-align:center;">
+            Developed by OneThought
+        </div>
+    </footer>
+    <script>
+        // 每次关闭页面时清空缓存
+        window.addEventListener('beforeunload', function() {
+            localStorage.removeItem('announcement_shown');
+        });
+
+        // 公告数据动态加载
+        function loadNoticeBox() {
+            var box = document.getElementById('noticeBox');
+            if (!box) return;
+            fetch('files/notice.json').then(res=>res.json()).then(data=>{
+                if(data && data.content) box.textContent = data.content;
+            }).catch(()=>{
+                box.textContent = '欢迎访问一思数据！本网站近期有新功能上线，敬请关注。';
+            });
+        }
+
+        // 页面切换函数，带历史记录
+        function showMainContent(push) {
+            loadNoticeBox(); // 每次切换主页都刷新公告
+            var mainContent = document.getElementById('mainContent');
+            var dataCenterPage = document.getElementById('dataCenterPage');
+            if (dataCenterPage) {
+                dataCenterPage.classList.remove('show');
+                dataCenterPage.style.display = 'none';
+            }
+            if (mainContent) {
+                mainContent.classList.add('show');
+                mainContent.style.display = 'block';
+            }
+            if (push) history.pushState({page: 'main'}, '', '#main');
+        }
+
+        function showDataCenter(push) {
+            var mainContent = document.getElementById('mainContent');
+            var dataCenterPage = document.getElementById('dataCenterPage');
+            if (mainContent) {
+                mainContent.classList.remove('show');
+                mainContent.style.display = 'none';
+            }
+            if (dataCenterPage) {
+                dataCenterPage.classList.add('show');
+                dataCenterPage.style.display = 'block';
+                // 渲染下载列表
+                var ul = document.getElementById('dataCenterDownloadList');
+                if (ul) {
+                    ul.innerHTML = '';
+                    var render = function(list) {
+                        list.forEach(function(item) {
+                            var li = document.createElement('li');
+                            li.style.margin = '18px 0';
+                            var a = document.createElement('a');
+                            // 路径改为files/
+                            a.href = item.url.startsWith('http') ? item.url : ('files/' + item.url.replace(/^files\//, '').replace(/^download\//, ''));
+                            a.textContent = item.name;
+                            a.style = "color:#0097a7;text-decoration:underline;";
+                            if(item.download) a.setAttribute('download', '');
+                            if(item.target) a.setAttribute('target', item.target);
+                            li.appendChild(a);
+                            if(item.desc){
+                                var desc = document.createElement('div');
+                                desc.textContent = item.desc;
+                                desc.style = "color:#666;font-size:0.95em;margin-top:4px;";
+                                li.appendChild(desc);
+                            }
+                            ul.appendChild(li);
+                        });
+                    };
+                    if(window.downloadList && Array.isArray(window.downloadList)) render(window.downloadList);
+                    else fetch('files/css.json').then(r=>r.json()).then(render);
+                }
+            }
+            if (push) history.pushState({page: 'dataCenter'}, '', '#dataCenter');
+        }
+
+        // 监听浏览器回退/前进
+        window.addEventListener('popstate', function() {
+            if (location.hash === '#dataCenter') {
+                showDataCenter(false);
+            } else {
+                showMainContent(false);
+            }
+        });
+
+        // 页面初始加载
+        window.addEventListener('DOMContentLoaded', function() {
+            loadNoticeBox();
+            var mainContent = document.getElementById('mainContent');
+            if (mainContent) {
+                mainContent.classList.add('show');
+                mainContent.style.display = 'block';
+            }
+            // 根据hash显示对应页面
+            if (location.hash === '#dataCenter') {
+                showDataCenter(false);
+            } else {
+                showMainContent(false);
+            }
+        });
+
+        // 快捷栏展开/关闭
+        function toggleQuickBar() {
+            var bar = document.getElementById('quick-bar');
+            bar.style.setProperty('--bar-transition', '1s');
+            if (bar.classList.contains('closed')) {
+                // 展开
+                // 先锁定当前宽度
+                bar.style.width = bar.offsetWidth + 'px';
+                // 触发重绘
+                void bar.offsetWidth;
+                // 移除closed类
+                bar.classList.remove('closed');
+                // 移除min/max-width限制
+                bar.style.removeProperty('min-width');
+                bar.style.removeProperty('max-width');
+                // 触发重绘
+                void bar.offsetWidth;
+                // 计算内容宽度
+                var fullWidth = bar.scrollWidth;
+                // 动画到内容宽度
+                bar.style.width = fullWidth + 'px';
+                setTimeout(function() {
+                    bar.style.removeProperty('width');
+                }, 1000);
+            } else {
+                // 收缩
+                // 先锁定当前宽度
+                bar.style.width = bar.offsetWidth + 'px';
+                void bar.offsetWidth;
+                // 再加closed类
+                bar.classList.add('closed');
+                bar.style.minWidth = '56px';
+                bar.style.maxWidth = '56px';
+                bar.style.width = '56px';
+            }
+        }
+
+        // 用户须知弹窗逻辑
+        function openUserNotice() {
+            var modal = document.getElementById('userNoticeModal');
+            if(modal) {
+                modal.style.display = 'flex';
+                modal.classList.remove('hide');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        function closeUserNotice() {
+            var modal = document.getElementById('userNoticeModal');
+            if(modal) {
+                modal.classList.add('hide');
+                setTimeout(function(){
+                    modal.style.display = 'none';
+                    modal.classList.remove('hide');
+                    document.body.style.overflow = '';
+                }, 350);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            var btn = document.getElementById('userNoticeBtn');
+            if(btn) btn.onclick = openUserNotice;
+            var modal = document.getElementById('userNoticeModal');
+            if(modal) {
+                modal.onclick = function(e) {
+                    if(e.target === modal) closeUserNotice();
+                };
+            }
+        });
+    </script>
+</body>
+</html>
