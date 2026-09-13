@@ -69,9 +69,15 @@
    - 根目录：`/`
 3. 保存并部署。`wrangler.toml` 已声明：
    - `main = "worker/index.js"`（后端入口）
+   - `keep_vars = true`（部署时保留仪表盘上设置的变量，见下方说明）
    - `[assets] directory = "."`（静态资源根目录）
    - `run_worker_first = ["/api/*", "/download/*"]`（这些路径交给后端）
    - `.assetsignore` 会把 `worker/`、`scripts/`、`download/` 等服务端文件排除出静态资产。
+
+> **关于 `keep_vars = true`**：`wrangler deploy` 默认会以配置文件为准，把仪表盘上添加的
+> **明文变量**（如 `B2_ENDPOINT`、`B2_BUCKET`）覆盖删除（Secret 不受影响）。
+> 本仓库已设置 `keep_vars = true`，部署时会保留仪表盘上的变量。
+> 也可以把这些明文变量直接写进 `wrangler.toml` 的 `[vars]` 段，效果等同。
 
 > 如果此前项目是「只有静态资产的 Worker」并提示无法添加变量，正是缺少 `main` 入口；
 > 加入 `worker/` 与 `wrangler.toml` 后重新部署即可。

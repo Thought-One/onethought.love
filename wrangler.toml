@@ -2,6 +2,10 @@ name = "onethought-love"
 compatibility_date = "2025-09-01"
 main = "worker/index.js"
 
+# 部署时保留在 Cloudflare 仪表盘（Variables and Secrets）中设置的明文变量，
+# 避免每次部署 B2_ENDPOINT、B2_BUCKET 等被覆盖删除。
+keep_vars = true
+
 [assets]
 directory = "."
 binding = "ASSETS"
