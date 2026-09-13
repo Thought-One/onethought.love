@@ -369,50 +369,6 @@
             </div>
         </div>
     </main>
-    <!-- 右下角悬浮用户须知和赞助入口 -->
-    <div id="corner-links" style="
-        position: fixed;
-        right: 32px;
-        bottom: 92px;
-        z-index: 100;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 14px;
-        pointer-events: none;
-    ">
-        <a href="javascript:void(0);" id="userNoticeBtn" style="
-            color: #0097a7;
-            background: none;
-            border-radius: 0;
-            padding: 0;
-            font-size: 1.08em;
-            text-decoration: underline;
-            font-style: italic;
-            margin-bottom: 2px;
-            box-shadow: none;
-            pointer-events: auto;
-            transition: color 0.2s;
-            font-family: inherit;
-        " onmouseover="this.style.color='#00838f'" onmouseout="this.style.color='#0097a7'">
-            用户须知
-        </a>
-        <a href="https://ifdian.net/a/one_thought" target="_blank" style="
-            color: #0097a7;
-            background: none;
-            border-radius: 0;
-            padding: 0;
-            font-size: 1.08em;
-            text-decoration: underline;
-            font-style: italic;
-            box-shadow: none;
-            pointer-events: auto;
-            transition: color 0.2s;
-            font-family: inherit;
-        " onmouseover="this.style.color='#00838f'" onmouseout="this.style.color='#0097a7'">
-            赞助
-        </a>
-    </div>
     <!-- 用户须知弹窗（模态框） -->
     <div id="userNoticeModal" style="
         display:none;
@@ -482,6 +438,20 @@
             </span>
             <span style="color:#0097a7; font-size:0.95em;">
                 Make OneThought Great Again · Developed by OneThought
+            </span>
+            <span style="display:inline-flex;align-items:center;gap:14px;">
+                <a href="javascript:void(0);" id="userNoticeBtn" style="
+                    color:#0097a7; text-decoration:underline; font-style:italic;
+                    font-size:1em; font-family:inherit; transition:color 0.2s;
+                " onmouseover="this.style.color='#00838f'" onmouseout="this.style.color='#0097a7'">
+                    用户须知
+                </a>
+                <a href="https://ifdian.net/a/one_thought" target="_blank" rel="noopener" style="
+                    color:#0097a7; text-decoration:underline; font-style:italic;
+                    font-size:1em; font-family:inherit; transition:color 0.2s;
+                " onmouseover="this.style.color='#00838f'" onmouseout="this.style.color='#0097a7'">
+                    赞助
+                </a>
             </span>
         </div>
     </footer>
