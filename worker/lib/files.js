@@ -1,6 +1,6 @@
 ﻿import { isAuthenticated } from './auth.js';
 import { json, error, formatBytes, publicFileUrl } from './http.js';
-import { b2Configured, b2ListAll, b2Put, b2Delete, b2GetJson, b2PutJson } from './b2.js';
+import { b2Configured, b2Debug, b2ListAll, b2Put, b2Delete, b2GetJson, b2PutJson } from './b2.js';
 
 const INDEX_KEY = '_config/index.json';
 const RESERVED_PREFIX = '_';
@@ -61,7 +61,11 @@ export async function onRequestGet({ env }) {
   try {
     listed = await b2ListAll(env);
   } catch (err) {
-    return error(err.message || '读取存储失败', 502);
+    const message = err.message || '读取存储失败';
+    const hint = /InvalidAccessKeyId|SignatureDoesNotMatch|AccessDenied/i.test(message)
+      ? ` 请检查 B2 凭据（B2_KEY_ID 应为 keyID，B2_APP_KEY 应为 applicationKey，切勿填反）。当前配置：${JSON.stringify(b2Debug(env))}`
+      : '';
+    return error(message + hint, 502);
   }
 
   const index = await readIndex(env);

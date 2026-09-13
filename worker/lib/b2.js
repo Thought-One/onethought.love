@@ -55,24 +55,52 @@ function decodeXml(value) {
     .replace(/&amp;/g, '&');
 }
 
-export function b2Configured(env) {
-  return Boolean(
-    env.B2_ENDPOINT && env.B2_BUCKET && env.B2_KEY_ID && env.B2_APP_KEY,
-  );
+function clean(value) {
+  return String(value == null ? '' : value).trim();
 }
 
-function regionOf(env) {
-  if (env.B2_REGION) return env.B2_REGION;
-  const parts = String(env.B2_ENDPOINT || '').split('.');
-  return parts.length >= 2 ? parts[1] : 'us-west-004';
+// 归一化环境变量：去除首尾空白/换行，并兼容填入了完整 URL 的 Endpoint
+function config(env) {
+  let endpoint = clean(env.B2_ENDPOINT)
+    .replace(/^https?:\/\//i, '')
+    .replace(/\/+$/, '');
+  const region =
+    clean(env.B2_REGION) || (endpoint.split('.')[1] || 'us-west-004');
+  return {
+    endpoint,
+    region,
+    bucket: clean(env.B2_BUCKET),
+    keyId: clean(env.B2_KEY_ID),
+    appKey: clean(env.B2_APP_KEY),
+  };
+}
+
+export function b2Configured(env) {
+  const c = config(env);
+  return Boolean(c.endpoint && c.bucket && c.keyId && c.appKey);
+}
+
+// 用于排查配置问题，返回脱敏后的配置信息
+export function b2Debug(env) {
+  const c = config(env);
+  const mask = (value) => {
+    if (!value) return '(空)';
+    const tail = value.length > 4 ? value.slice(-2) : '';
+    return `${value.slice(0, 3)}…${tail}（长度 ${value.length}）`;
+  };
+  return {
+    endpoint: c.endpoint || '(空)',
+    region: c.region,
+    bucket: c.bucket || '(空)',
+    keyId: mask(c.keyId),
+    appKey: mask(c.appKey),
+  };
 }
 
 async function signedRequest(env, method, key, options = {}) {
   const { body = null, contentType = '', query = null, extraHeaders = null } = options;
-  const host = env.B2_ENDPOINT;
-  const region = regionOf(env);
+  const { endpoint: host, region, bucket, keyId, appKey } = config(env);
   const service = 's3';
-  const bucket = env.B2_BUCKET;
 
   const canonicalUri = `/${bucket}${key ? '/' + encodeKey(key) : ''}`;
   const canonicalQuery = query
@@ -126,7 +154,7 @@ async function signedRequest(env, method, key, options = {}) {
     await sha256Hex(canonicalRequest),
   ].join('\n');
 
-  const signingKey = await deriveSigningKey(env.B2_APP_KEY, dateStamp, region, service);
+  const signingKey = await deriveSigningKey(appKey, dateStamp, region, service);
   const signature = toHex(await hmacSha256(signingKey, stringToSign));
 
   const headers = new Headers();
@@ -136,7 +164,7 @@ async function signedRequest(env, method, key, options = {}) {
   }
   headers.set(
     'Authorization',
-    `AWS4-HMAC-SHA256 Credential=${env.B2_KEY_ID}/${credentialScope}, ` +
+    `AWS4-HMAC-SHA256 Credential=${keyId}/${credentialScope}, ` +
       `SignedHeaders=${signedHeaders}, Signature=${signature}`,
   );
 
