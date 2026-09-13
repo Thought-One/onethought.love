@@ -100,8 +100,10 @@
   </div>
 
   <div id="configWarning" class="card hidden" style="background:#fff3e0;">
-    <strong>后端未就绪。</strong>请将本站部署到 Cloudflare Pages，并绑定 R2 存储桶、设置
-    <code>ADMIN_PASSWORD</code> 与 <code>SESSION_SECRET</code> 环境变量。
+    <strong>后端未就绪。</strong>请在本项目的
+    <b>Settings → Variables and Secrets</b> 中为 <b>Production</b> 与 <b>Preview</b> 添加所需环境变量，
+    保存后 <b>Retry deployment</b> 重新部署。
+    <div id="missingVars" style="margin-top:8px;color:#c62828;"></div>
   </div>
 
   <div id="loginView" class="card">
@@ -289,11 +291,25 @@
     loadFiles();
   }
 
+  function showConfigWarning(missing, apiUnreachable) {
+    var box = $('configWarning');
+    var detail = $('missingVars');
+    if (apiUnreachable) {
+      detail.textContent = '无法连接后端接口（/api/session）。请确认部署的是 Worker（含 worker/ 与 wrangler.toml），而不是纯静态站点。';
+    } else if (missing && missing.length) {
+      detail.textContent = '缺少环境变量：' + missing.join('、');
+    } else {
+      detail.textContent = '';
+    }
+    show(box, true);
+  }
+
   function checkSession() {
     return fetch('/api/session', { credentials: 'same-origin' })
       .then(function (res) { return res.json(); })
       .then(function (data) {
         state.configured = Boolean(data.configured);
+        if (!data.configured) showConfigWarning(data.missing, false);
         if (!data.authenticated) {
           show($('loginView'), true);
           show($('dashboardView'), false);
@@ -303,6 +319,7 @@
       })
       .catch(function () {
         show($('loginView'), true);
+        showConfigWarning(null, true);
       });
   }
 
@@ -416,15 +433,6 @@
       show($('dashboardView'), false);
     });
   };
-
-  fetch('/api/session', { credentials: 'same-origin' })
-    .then(function (res) { return res.json(); })
-    .then(function (data) {
-      if (!data.configured) show($('configWarning'), true);
-    })
-    .catch(function () {
-      show($('configWarning'), true);
-    });
 
   checkSession();
 })();
