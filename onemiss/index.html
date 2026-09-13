@@ -145,7 +145,7 @@
         <button id="uploadBtn" disabled>开始上传</button>
         <span class="msg" id="uploadMsg"></span>
       </div>
-      <div class="hint">单文件上限约 95MB；更大的文件请使用外链方式。</div>
+      <div class="hint">单文件上限约 95MB；更大的文件请使用外链方式。<br>上传 .txt 文件时，若内容中有被引号包裹的网址（如 “https://example.com”），该条目在首页点击将直接跳转到该网站。</div>
     </div>
 
     <div class="card">
@@ -216,6 +216,7 @@
       if (file.key !== file.name) parts.push('存储名：' + file.key);
       if (file.uploaded) parts.push(new Date(file.uploaded).toLocaleString('zh-CN'));
       if (file.desc) parts.push(file.desc);
+      if (file.redirectUrl) parts.push('跳转：' + file.redirectUrl);
       meta.textContent = parts.join(' · ');
       info.appendChild(name);
       info.appendChild(meta);

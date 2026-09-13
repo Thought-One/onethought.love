@@ -539,19 +539,27 @@
                             return;
                         }
                         list.forEach(function(item) {
-                            if (!item || !item.url) return;
+                            if (!item || (!item.url && !item.redirectUrl)) return;
                             var li = document.createElement('li');
                             li.style.margin = '18px 0';
                             var a = document.createElement('a');
-                            // download/ 中的文件直接使用清单里的相对路径
-                            a.href = item.url;
+                            var isJump = !!item.redirectUrl;
+                            // txt 内含被引号包裹的网址时，点击直接跳转；否则走下载
+                            a.href = isJump ? item.redirectUrl : item.url;
                             a.textContent = item.name || item.file || item.url;
-                            a.style = "color:#0097a7;text-decoration:underline;";
-                            if (item.download !== false) a.setAttribute('download', item.file || '');
-                            if (item.target) a.setAttribute('target', item.target);
+                            a.style = isJump
+                                ? "color:#fff;background:#00bcd4;padding:6px 16px;border-radius:4px;text-decoration:none;display:inline-block;"
+                                : "color:#0097a7;text-decoration:underline;";
+                            if (isJump) {
+                                a.setAttribute('target', item.target || '_blank');
+                                a.setAttribute('rel', 'noopener');
+                            } else {
+                                if (item.download !== false) a.setAttribute('download', item.file || '');
+                                if (item.target) a.setAttribute('target', item.target);
+                            }
                             li.appendChild(a);
                             var meta = [];
-                            if (item.sizeText) meta.push(item.sizeText);
+                            if (item.sizeText && !isJump) meta.push(item.sizeText);
                             if (item.desc) meta.push(item.desc);
                             if (meta.length) {
                                 var desc = document.createElement('div');

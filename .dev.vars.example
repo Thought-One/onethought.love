@@ -1,2 +1,7 @@
 ADMIN_PASSWORD=change-me
 SESSION_SECRET=change-me-to-a-long-random-string
+B2_ENDPOINT=s3.us-west-004.backblazeb2.com
+B2_REGION=us-west-004
+B2_BUCKET=onethought-downloads
+B2_KEY_ID=your-key-id
+B2_APP_KEY=your-application-key
