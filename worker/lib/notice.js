@@ -1,6 +1,6 @@
-import { isAuthenticated } from '../_utils/auth.js';
-import { json, error } from '../_utils/http.js';
-import { b2Configured, b2GetJson, b2PutJson } from '../_utils/b2.js';
+﻿import { isAuthenticated } from './auth.js';
+import { json, error } from './http.js';
+import { b2Configured, b2GetJson, b2PutJson } from './b2.js';
 
 const NOTICE_KEY = '_config/notice.json';
 

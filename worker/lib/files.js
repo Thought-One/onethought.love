@@ -1,6 +1,6 @@
-import { isAuthenticated } from '../_utils/auth.js';
-import { json, error, formatBytes, publicFileUrl } from '../_utils/http.js';
-import { b2Configured, b2ListAll, b2Put, b2Delete, b2GetJson, b2PutJson } from '../_utils/b2.js';
+﻿import { isAuthenticated } from './auth.js';
+import { json, error, formatBytes, publicFileUrl } from './http.js';
+import { b2Configured, b2ListAll, b2Put, b2Delete, b2GetJson, b2PutJson } from './b2.js';
 
 const INDEX_KEY = '_config/index.json';
 const RESERVED_PREFIX = '_';

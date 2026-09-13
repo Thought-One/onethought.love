@@ -1,12 +1,9 @@
-import { b2Configured, b2Get } from '../_utils/b2.js';
+﻿import { b2Configured, b2Get } from './b2.js';
 
-export async function onRequestGet({ request, env, params }) {
-  const segments = Array.isArray(params.path) ? params.path : [params.path].filter(Boolean);
-  const path = segments.join('/');
-  if (!path || path.startsWith('_')) return new Response('Not Found', { status: 404 });
+export async function serveDownload(request, env, key) {
+  if (!key || key.startsWith('_')) return new Response('Not Found', { status: 404 });
   if (!b2Configured(env)) return new Response('Storage not configured', { status: 500 });
 
-  const key = decodeURIComponent(path);
   const rangeHeader = request.headers.get('Range');
   const upstream = await b2Get(env, key, rangeHeader);
 

@@ -1,6 +1,6 @@
 # 一思数据
 
-静态站点 + 免费后台管理系统。文件存于 **Backblaze B2**，公告与文件管理通过 **Cloudflare Pages Functions** 完成。
+静态站点 + 免费后台管理系统。文件存于 **Backblaze B2**，公告与文件管理通过 **Cloudflare Worker** 完成。
 
 访问地址：https://thought-one.github.io/onethought.love/（GitHub Pages 仅作静态兜底，无后台）
 
@@ -10,18 +10,18 @@
 浏览器
   ├─ index.html        公开站点：读 api/files 渲染下载列表、读 api/notice 显示公告
   ├─ onemiss/          后台：登录后上传/删除文件、编辑公告（访问 /onemiss）
-  └─ functions/        Cloudflare Pages Functions（免费 Serverless 后端）
-       ├─ api/login    管理员登录，签发 HMAC 签名 Cookie
-       ├─ api/logout   退出登录
-       ├─ api/session  查询登录状态
-       ├─ api/files    GET 列表 / POST 上传 / DELETE 删除（读写 B2）
-       ├─ api/notice   GET 读取 / PUT 保存公告（存于 B2）
-       ├─ _utils/b2.js B2 的 S3 兼容接口封装（AWS Signature V4）
-       └─ download/*   从 B2 读取文件并下载（支持断点续传 Range）
-  download/            B2 不可用时的静态兜底文件与 manifest.json
+  ├─ worker/           Cloudflare Worker（免费 Serverless 后端）
+  │    ├─ index.js     入口：/api/* 与 /download/* 交给后端，其余走静态资产
+  │    └─ lib/         login / logout / session / files / notice / download
+  │         ├─ b2.js   B2 的 S3 兼容接口封装（AWS Signature V4）
+  │         └─ auth.js HMAC 签名会话
+  ├─ wrangler.toml     Worker 与静态资产配置
+  ├─ .assetsignore     部署时排除的服务端文件
+  └─ download/         B2 不可用时的静态兜底文件与 manifest.json
 ```
 
-后端未部署时，站点会自动回退到 `download/manifest.json` 与 `files/notice.json`，因此 GitHub Pages 仍可正常浏览。
+`/onemiss` 由 Worker 重写到 `onemiss/index.html`；静态资源通过 `ASSETS` 绑定提供。
+后端未部署时（如 GitHub Pages），站点会自动回退到 `download/manifest.json` 与 `files/notice.json`。
 
 ## 特殊功能：txt 文件跳转
 
@@ -37,7 +37,7 @@
 - 若只写 `“www.bilibili.com”`（不带 http），会自动补全为 `https://`。
 - 若引号内不是网址（如 `“普通文字”`），则按普通文件正常下载。
 
-## 部署到 Cloudflare Pages（免费）
+## 部署到 Cloudflare（免费）
 
 ### 第一步：注册 Backblaze B2 并创建存储桶
 
@@ -60,20 +60,26 @@
    - `keyID`（例如 `005abc...`）
    - `applicationKey`（一长串，**只显示这一次，务必复制保存**）
 
-### 第三步：创建 Cloudflare Pages 项目
+### 第三步：创建 / 连接 Cloudflare Worker 项目
 
-1. 登录 https://dash.cloudflare.com → **Workers & Pages** → **Create** → **Pages** → **Connect to Git**。
-2. 授权 GitHub，选择本仓库（`Thought-One/onethought.love`）。
-3. 构建设置：
-   - Framework preset：**None**
-   - Build command：**留空**
-   - Build output directory：**`/`**
-4. **Save and Deploy**。
-   - 注意：仓库中**不要**放置 `wrangler.toml`，否则 Pages 会改用 `wrangler deploy`（Workers 方式）构建并报错。
+1. 登录 https://dash.cloudflare.com → **Workers & Pages** → **Create**，连接 Git 仓库并选择本仓库（`Thought-One/onethought.love`）。
+2. 构建设置保持默认即可（本仓库自带 `wrangler.toml`）：
+   - 构建命令：**留空**
+   - 部署命令：`npx wrangler deploy`（默认值，无需修改）
+   - 根目录：`/`
+3. 保存并部署。`wrangler.toml` 已声明：
+   - `main = "worker/index.js"`（后端入口）
+   - `[assets] directory = "."`（静态资源根目录）
+   - `run_worker_first = ["/api/*", "/download/*"]`（这些路径交给后端）
+   - `.assetsignore` 会把 `worker/`、`scripts/`、`download/` 等服务端文件排除出静态资产。
+
+> 如果此前项目是「只有静态资产的 Worker」并提示无法添加变量，正是缺少 `main` 入口；
+> 加入 `worker/` 与 `wrangler.toml` 后重新部署即可。
 
 ### 第四步：配置环境变量
 
-项目 → **Settings → Environment variables**，在 **Production** 和 **Preview** 两个环境都添加：
+项目 → **Settings → Variables and Secrets**（旧界面为 Environment variables），
+在 **Production** 和 **Preview** 两个环境都添加：
 
 | 变量名 | 说明 | 示例 | 加密 |
 |---|---|---|---|
@@ -112,22 +118,22 @@
 3. **上传文件**：选择或拖拽文件，可填写显示名称、存储文件名、描述 → 开始上传。
 4. **文件列表**：可复制下载链接或删除文件。
 
-> 单文件上限约 95MB（受 Pages Functions 内存限制）。更大的文件请使用外链：
+> 单文件上限约 95MB（受 Worker 请求体限制）。更大的文件请使用外链：
 > 编辑 `download/links.json` 添加网盘地址，或直接在 `download/meta.json` 维护描述。
 
 ## 本地开发（可选）
 
 ```powershell
-# 安装 Wrangler（首次）
+# 安装依赖（首次）
 npm install -g wrangler
 
 # 复制并填写本地密钥（含 B2 信息）
 Copy-Item .dev.vars.example .dev.vars
 
-# 启动本地开发服务器（自动加载 .dev.vars）
-wrangler pages dev .
+# 启动本地开发服务器（自动加载 .dev.vars 与 wrangler.toml）
+wrangler dev
 
-# 访问 http://localhost:8788/ 与 http://localhost:8788/onemiss
+# 访问 http://localhost:8787/ 与 http://localhost:8787/onemiss
 ```
 
 ## 静态兜底（可选）

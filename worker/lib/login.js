@@ -1,5 +1,5 @@
-import { createSessionToken, safeEqual, sessionCookie } from '../_utils/auth.js';
-import { json, error } from '../_utils/http.js';
+﻿import { createSessionToken, safeEqual, sessionCookie } from './auth.js';
+import { json, error } from './http.js';
 
 export async function onRequestPost({ request, env }) {
   if (!env.ADMIN_PASSWORD || !env.SESSION_SECRET) {

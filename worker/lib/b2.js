@@ -1,4 +1,4 @@
-// Backblaze B2 的 S3 兼容接口封装（AWS Signature V4），基于 Web Crypto 实现。
+﻿// Backblaze B2 的 S3 兼容接口封装（AWS Signature V4），基于 Web Crypto 实现。
 // 需要的环境变量：
 //   B2_ENDPOINT  形如 s3.us-west-004.backblazeb2.com
 //   B2_REGION    形如 us-west-004（可省略，从 ENDPOINT 自动推导）
