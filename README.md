@@ -25,20 +25,19 @@
 ## 部署到 Cloudflare Pages（推荐，免费）
 
 1. **创建 R2 存储桶**
-   - 登录 Cloudflare 控制台 → **R2** → 创建存储桶，名称填 `onethought-downloads`
-     （如用其它名称，请同步修改 `wrangler.toml` 里的 `bucket_name`）。
+   - 登录 Cloudflare 控制台 → **R2** → 创建存储桶，名称填 `onethought-downloads`。
 
 2. **创建 Pages 项目**
    - **Workers & Pages** → **Create** → **Pages** → **Connect to Git**，选择本仓库。
    - Framework preset：`None`
    - Build command：留空
    - Build output directory：`/`
+   - 注意：仓库中**不要**放置 `wrangler.toml`，否则 Pages 会改用 `wrangler deploy`（Workers 方式）构建并报错。
 
 3. **绑定 R2**
    - Pages 项目 → **Settings → Functions → R2 bucket bindings** → 添加：
      - Variable name：`DOWNLOADS`
      - R2 bucket：`onethought-downloads`
-   - （若仓库包含 `wrangler.toml`，Cloudflare 会自动读取该绑定，可跳过此步。）
 
 4. **设置环境变量**（Settings → Environment variables，Production 与 Preview 都加）
    - `ADMIN_PASSWORD`：后台登录密码，勾选 **Encrypt**
