@@ -54,7 +54,7 @@ function serialize(key, meta, fallback) {
   };
 }
 
-export async function onRequestGet({ env }) {
+export async function onRequestGet({ request, env }) {
   if (!b2Configured(env)) return error('未配置 Backblaze B2 存储', 500);
 
   let listed;
@@ -62,9 +62,16 @@ export async function onRequestGet({ env }) {
     listed = await b2ListAll(env);
   } catch (err) {
     const message = err.message || '读取存储失败';
-    const hint = /InvalidAccessKeyId|SignatureDoesNotMatch|AccessDenied/i.test(message)
-      ? ` 请检查 B2 凭据（B2_KEY_ID 应为 keyID，B2_APP_KEY 应为 applicationKey，切勿填反）。当前配置：${JSON.stringify(b2Debug(env))}`
-      : '';
+    const isAuthError = /InvalidAccessKeyId|SignatureDoesNotMatch|AccessDenied|Malformed/i.test(message);
+    let hint = '';
+    if (isAuthError) {
+      const authed = await isAuthenticated(request, env);
+      if (authed) {
+        hint = ` 请检查 B2 凭据。当前配置：${JSON.stringify(b2Debug(env, true))}`;
+      } else {
+        hint = ' 存储认证失败，请管理员登录后台查看详细配置诊断。';
+      }
+    }
     return error(message + hint, 502);
   }
 

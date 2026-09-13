@@ -80,20 +80,43 @@ export function b2Configured(env) {
   return Boolean(c.endpoint && c.bucket && c.keyId && c.appKey);
 }
 
-// 用于排查配置问题，返回脱敏后的配置信息
-export function b2Debug(env) {
+// 用于排查配置问题，返回实际生效的配置与格式校验结果。
+// verbose 为 true 时（仅登录管理员）显示完整 keyID，否则打码。
+export function b2Debug(env, verbose = false) {
   const c = config(env);
-  const mask = (value) => {
-    if (!value) return '(空)';
-    const tail = value.length > 4 ? value.slice(-2) : '';
-    return `${value.slice(0, 3)}…${tail}（长度 ${value.length}）`;
-  };
+  const issues = [];
+
+  if (!c.keyId) {
+    issues.push('B2_KEY_ID 为空');
+  } else if (!/^[0-9a-fA-F]{25}$/.test(c.keyId) && !/^[0-9a-fA-F]{12}$/.test(c.keyId)) {
+    if (/^K/.test(c.keyId)) {
+      issues.push('B2_KEY_ID 填成了 applicationKey（以 K 开头的值应填到 B2_APP_KEY）');
+    } else {
+      issues.push(`B2_KEY_ID 格式异常：应为 25 位十六进制（以 005 开头），实际长度 ${c.keyId.length}、以 "${c.keyId.slice(0, 4)}…" 开头`);
+    }
+  }
+
+  if (!c.appKey) {
+    issues.push('B2_APP_KEY 为空');
+  } else if (/^[0-9a-fA-F]{25}$/.test(c.appKey)) {
+    issues.push('B2_APP_KEY 填成了 keyID（25 位十六进制的值应填到 B2_KEY_ID）');
+  } else if (c.appKey.length < 20) {
+    issues.push(`B2_APP_KEY 长度偏短（${c.appKey.length}），正常应为 31 位`);
+  }
+
+  if (!c.endpoint) issues.push('B2_ENDPOINT 为空');
+  if (!c.bucket) issues.push('B2_BUCKET 为空');
+
+  const mask = (value) => (value.length > 8 ? `${value.slice(0, 4)}…${value.slice(-3)}` : '(过短)');
+
   return {
     endpoint: c.endpoint || '(空)',
     region: c.region,
     bucket: c.bucket || '(空)',
-    keyId: mask(c.keyId),
-    appKey: mask(c.appKey),
+    keyId: verbose ? c.keyId : mask(c.keyId),
+    keyIdLength: c.keyId.length,
+    appKeyLength: c.appKey.length,
+    issues: issues.length ? issues : ['未发现明显格式问题'],
   };
 }
 
