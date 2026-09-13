@@ -81,8 +81,15 @@ export function clearSessionCookie() {
   return `${SESSION_COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0`;
 }
 
+function readBearer(request) {
+  const header = request.headers.get('Authorization') || '';
+  const match = header.match(/^Bearer\s+(.+)$/i);
+  return match ? match[1].trim() : null;
+}
+
 export async function isAuthenticated(request, env) {
   if (!env.SESSION_SECRET) return false;
-  const token = readCookie(request, SESSION_COOKIE);
+  // 仅接受请求头中的令牌，确保每次进入后台都需要重新登录
+  const token = readBearer(request);
   return verifySessionToken(token, env.SESSION_SECRET);
 }

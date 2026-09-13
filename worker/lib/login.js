@@ -1,5 +1,7 @@
-﻿import { createSessionToken, safeEqual, sessionCookie } from './auth.js';
+﻿import { createSessionToken, safeEqual } from './auth.js';
 import { json, error } from './http.js';
+
+const TOKEN_TTL_SECONDS = 12 * 60 * 60;
 
 export async function onRequestPost({ request, env }) {
   if (!env.ADMIN_PASSWORD || !env.SESSION_SECRET) {
@@ -18,6 +20,6 @@ export async function onRequestPost({ request, env }) {
     return error('密码错误', 401);
   }
 
-  const token = await createSessionToken(env.SESSION_SECRET);
-  return json({ ok: true }, { headers: { 'Set-Cookie': sessionCookie(token) } });
+  const token = await createSessionToken(env.SESSION_SECRET, TOKEN_TTL_SECONDS);
+  return json({ ok: true, token, expiresIn: TOKEN_TTL_SECONDS });
 }

@@ -146,8 +146,9 @@ wrangler dev
 
 ## 安全说明
 
-- 密码以环境变量保存，前端永不接触明文；会话 Cookie 为 `HttpOnly + Secure + SameSite=Strict`。
-- 登录态使用 HMAC-SHA256 签名，7 天过期。
+- 密码以环境变量保存，前端永不接触明文。
+- 登录令牌使用 HMAC-SHA256 签名，有效期 12 小时；仅保存在当前标签页的 `sessionStorage`，
+  通过 `Authorization: Bearer` 发送。**关闭标签页或重新进入后台都需要重新输入密码**。
 - B2 桶保持 Private，文件仅能通过本站后端访问。
 - 后台页面带 `noindex,nofollow`，不会被搜索引擎收录。
 - 不要将 `ADMIN_PASSWORD`、`SESSION_SECRET`、`B2_KEY_ID`、`B2_APP_KEY` 或 `.dev.vars` 提交到仓库。

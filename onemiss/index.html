@@ -177,11 +177,32 @@
     el.className = 'msg' + (text ? (ok ? ' ok' : ' err') : '');
   }
 
+  // 登录令牌只保存在当前标签页的 sessionStorage 中：
+  // 关闭标签页或重新进入后台时需要重新输入密码。
+  var TOKEN_KEY = 'ot_admin_token';
+
+  function getToken() {
+    try { return sessionStorage.getItem(TOKEN_KEY) || ''; } catch (e) { return ''; }
+  }
+
+  function setToken(token) {
+    try {
+      if (token) sessionStorage.setItem(TOKEN_KEY, token);
+      else sessionStorage.removeItem(TOKEN_KEY);
+    } catch (e) { /* 忽略隐私模式下的存储异常 */ }
+  }
+
   async function api(url, options) {
-    var res = await fetch(url, Object.assign({ credentials: 'same-origin' }, options || {}));
+    var opts = Object.assign({ credentials: 'same-origin' }, options || {});
+    var token = getToken();
+    if (token) {
+      opts.headers = Object.assign({}, opts.headers || {}, { Authorization: 'Bearer ' + token });
+    }
+    var res = await fetch(url, opts);
     var data = null;
     try { data = await res.json(); } catch (e) { data = null; }
     if (!res.ok) {
+      if (res.status === 401) setToken('');
       throw new Error((data && data.error) || ('请求失败 (' + res.status + ')'));
     }
     return data;
@@ -305,12 +326,19 @@
   }
 
   function checkSession() {
-    return fetch('/api/session', { credentials: 'same-origin' })
-      .then(function (res) { return res.json(); })
+    // 未持有令牌时直接要求登录，不再依赖持久 Cookie
+    if (!getToken()) {
+      show($('loginView'), true);
+      show($('dashboardView'), false);
+      checkConfigured();
+      return Promise.resolve();
+    }
+    return api('/api/session')
       .then(function (data) {
         state.configured = Boolean(data.configured);
         if (!data.configured) showConfigWarning(data.missing, false);
         if (!data.authenticated) {
+          setToken('');
           show($('loginView'), true);
           show($('dashboardView'), false);
           return;
@@ -318,7 +346,19 @@
         enterDashboard();
       })
       .catch(function () {
+        setToken('');
         show($('loginView'), true);
+        show($('dashboardView'), false);
+      });
+  }
+
+  function checkConfigured() {
+    return fetch('/api/session', { credentials: 'same-origin' })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (!data.configured) showConfigWarning(data.missing, false);
+      })
+      .catch(function () {
         showConfigWarning(null, true);
       });
   }
@@ -333,7 +373,8 @@
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password: password }),
-    }).then(function () {
+    }).then(function (data) {
+      setToken(data && data.token ? data.token : '');
       $('password').value = '';
       setMsg($('loginMsg'), '', true);
       enterDashboard();
@@ -428,7 +469,10 @@
   };
 
   $('logoutBtn').onclick = function () {
-    api('/api/logout', { method: 'POST' }).then(function () {
+    setToken('');
+    api('/api/logout', { method: 'POST' }).catch(function () {}).then(function () {
+      $('password').value = '';
+      setMsg($('loginMsg'), '', true);
       show($('loginView'), true);
       show($('dashboardView'), false);
     });
