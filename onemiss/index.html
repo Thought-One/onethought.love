@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>后台管理 - 一思数据</title>
+<link rel="icon" href="/res/indexphoto.jpg" type="image/jpeg">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: #e0f7fa;
+    color: #006064;
+    font-family: "微软雅黑", Arial, sans-serif;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 1.6em; color: #0097a7; text-align: center; margin: 0 0 24px; }
+  .card {
+    background: rgba(255,255,255,0.85);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,188,212,0.10);
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .card h2 { margin: 0 0 16px; font-size: 1.15em; color: #0097a7; }
+  label { display: block; font-size: 0.95em; margin: 12px 0 6px; color: #00695c; }
+  input[type="password"], input[type="text"], textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #b2ebf2;
+    border-radius: 6px;
+    font-size: 1em;
+    font-family: inherit;
+    color: #006064;
+    background: #fff;
+  }
+  textarea { resize: vertical; min-height: 90px; }
+  input:focus, textarea:focus { outline: 2px solid #4dd0e1; border-color: #4dd0e1; }
+  button {
+    background: #0097a7;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-size: 1em;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  button:hover { background: #00838f; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  button.ghost { background: #fff; color: #0097a7; border: 1px solid #0097a7; }
+  button.ghost:hover { background: #e0f7fa; }
+  button.danger { background: #e57373; }
+  button.danger:hover { background: #ef5350; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+  .row > div { flex: 1 1 180px; }
+  .actions { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .file-list { list-style: none; padding: 0; margin: 0; }
+  .file-list li {
+    border-top: 1px solid #e0f7fa;
+    padding: 14px 0;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .file-list li:first-child { border-top: none; }
+  .file-name { font-weight: bold; word-break: break-all; }
+  .file-meta { color: #607d8b; font-size: 0.9em; margin-top: 4px; }
+  .file-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .file-actions button { padding: 6px 12px; font-size: 0.9em; }
+  .msg { min-height: 1.4em; font-size: 0.95em; margin-top: 10px; }
+  .msg.ok { color: #2e7d32; }
+  .msg.err { color: #c62828; }
+  .hidden { display: none !important; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .topbar a { color: #0097a7; }
+  .hint { color: #607d8b; font-size: 0.88em; margin-top: 6px; }
+  #drop {
+    border: 2px dashed #4dd0e1;
+    border-radius: 8px;
+    padding: 22px;
+    text-align: center;
+    color: #0097a7;
+    cursor: pointer;
+    background: rgba(224,247,250,0.5);
+  }
+  #drop.hover { background: #b2ebf2; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <h1 style="margin:0;">一思数据 · 后台管理</h1>
+    <a href="/">返回站点</a>
+  </div>
+
+  <div id="configWarning" class="card hidden" style="background:#fff3e0;">
+    <strong>后端未就绪。</strong>请将本站部署到 Cloudflare Pages，并绑定 R2 存储桶、设置
+    <code>ADMIN_PASSWORD</code> 与 <code>SESSION_SECRET</code> 环境变量。
+  </div>
+
+  <div id="loginView" class="card">
+    <h2>管理员登录</h2>
+    <label for="password">密码</label>
+    <input type="password" id="password" autocomplete="current-password" placeholder="请输入管理员密码">
+    <div class="actions">
+      <button id="loginBtn">登录</button>
+    </div>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+
+  <div id="dashboardView" class="hidden">
+    <div class="card">
+      <h2>公告管理</h2>
+      <label for="notice">公告内容</label>
+      <textarea id="notice" placeholder="输入要展示在首页的公告内容"></textarea>
+      <div class="actions">
+        <button id="saveNoticeBtn">保存公告</button>
+        <span class="msg" id="noticeMsg"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>上传文件</h2>
+      <div id="drop">点击选择文件，或拖拽到此处</div>
+      <input type="file" id="fileInput" class="hidden">
+      <div class="row">
+        <div>
+          <label for="displayName">显示名称（可选）</label>
+          <input type="text" id="displayName" placeholder="默认使用文件名">
+        </div>
+        <div>
+          <label for="fileName">存储文件名（可选）</label>
+          <input type="text" id="fileName" placeholder="默认使用原文件名">
+        </div>
+      </div>
+      <label for="fileDesc">描述（可选）</label>
+      <input type="text" id="fileDesc" placeholder="例如：Minecraft 皮肤还原插件">
+      <div class="actions">
+        <button id="uploadBtn" disabled>开始上传</button>
+        <span class="msg" id="uploadMsg"></span>
+      </div>
+      <div class="hint">单文件上限约 95MB；更大的文件请使用外链方式。</div>
+    </div>
+
+    <div class="card">
+      <h2>文件列表</h2>
+      <ul class="file-list" id="fileList"></ul>
+      <div class="msg" id="listMsg"></div>
+    </div>
+
+    <div class="actions">
+      <button class="ghost" id="logoutBtn">退出登录</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var state = { files: [], selected: null, configured: false };
+
+  function $(id) { return document.getElementById(id); }
+
+  function show(el, visible) {
+    el.classList.toggle('hidden', !visible);
+  }
+
+  function setMsg(el, text, ok) {
+    el.textContent = text || '';
+    el.className = 'msg' + (text ? (ok ? ' ok' : ' err') : '');
+  }
+
+  async function api(url, options) {
+    var res = await fetch(url, Object.assign({ credentials: 'same-origin' }, options || {}));
+    var data = null;
+    try { data = await res.json(); } catch (e) { data = null; }
+    if (!res.ok) {
+      throw new Error((data && data.error) || ('请求失败 (' + res.status + ')'));
+    }
+    return data;
+  }
+
+  function formatBytes(bytes) {
+    if (!Number.isFinite(bytes) || bytes < 0) return '';
+    var units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    var value = bytes, i = 0;
+    while (value >= 1024 && i < units.length - 1) { value /= 1024; i += 1; }
+    return (value >= 100 || i === 0 ? Math.round(value) : value.toFixed(1)) + ' ' + units[i];
+  }
+
+  function renderFiles() {
+    var list = $('fileList');
+    list.innerHTML = '';
+    if (!state.files.length) {
+      var empty = document.createElement('li');
+      empty.textContent = '暂无文件，请先上传。';
+      empty.style.color = '#607d8b';
+      list.appendChild(empty);
+      return;
+    }
+    state.files.forEach(function (file) {
+      var li = document.createElement('li');
+
+      var info = document.createElement('div');
+      var name = document.createElement('div');
+      name.className = 'file-name';
+      name.textContent = file.name;
+      var meta = document.createElement('div');
+      meta.className = 'file-meta';
+      var parts = [formatBytes(file.size)];
+      if (file.key !== file.name) parts.push('存储名：' + file.key);
+      if (file.uploaded) parts.push(new Date(file.uploaded).toLocaleString('zh-CN'));
+      if (file.desc) parts.push(file.desc);
+      meta.textContent = parts.join(' · ');
+      info.appendChild(name);
+      info.appendChild(meta);
+
+      var actions = document.createElement('div');
+      actions.className = 'file-actions';
+
+      var copyBtn = document.createElement('button');
+      copyBtn.className = 'ghost';
+      copyBtn.textContent = '复制链接';
+      copyBtn.onclick = function () {
+        var link = new URL('/' + file.url.replace(/^\/+/, ''), location.origin).href;
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(link).then(function () {
+            setMsg($('listMsg'), '链接已复制：' + link, true);
+          }).catch(function () {
+            window.prompt('复制链接：', link);
+          });
+        } else {
+          window.prompt('复制链接：', link);
+        }
+      };
+
+      var delBtn = document.createElement('button');
+      delBtn.className = 'danger';
+      delBtn.textContent = '删除';
+      delBtn.onclick = function () {
+        if (!window.confirm('确定删除「' + file.name + '」？')) return;
+        delBtn.disabled = true;
+        api('/api/files?key=' + encodeURIComponent(file.key), { method: 'DELETE' })
+          .then(function () {
+            setMsg($('listMsg'), '已删除：' + file.name, true);
+            return loadFiles();
+          })
+          .catch(function (err) {
+            delBtn.disabled = false;
+            setMsg($('listMsg'), err.message, false);
+          });
+      };
+
+      actions.appendChild(copyBtn);
+      actions.appendChild(delBtn);
+      li.appendChild(info);
+      li.appendChild(actions);
+      list.appendChild(li);
+    });
+  }
+
+  function loadFiles() {
+    return api('/api/files').then(function (data) {
+      state.files = data.files || [];
+      renderFiles();
+    }).catch(function (err) {
+      setMsg($('listMsg'), err.message, false);
+    });
+  }
+
+  function loadNotice() {
+    return api('/api/notice').then(function (data) {
+      $('notice').value = data.content || '';
+    }).catch(function (err) {
+      setMsg($('noticeMsg'), err.message, false);
+    });
+  }
+
+  function enterDashboard() {
+    show($('loginView'), false);
+    show($('dashboardView'), true);
+    loadNotice();
+    loadFiles();
+  }
+
+  function checkSession() {
+    return fetch('/api/session', { credentials: 'same-origin' })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        state.configured = Boolean(data.configured);
+        if (!data.authenticated) {
+          show($('loginView'), true);
+          show($('dashboardView'), false);
+          return;
+        }
+        enterDashboard();
+      })
+      .catch(function () {
+        show($('loginView'), true);
+      });
+  }
+
+  $('loginBtn').onclick = function () {
+    var password = $('password').value;
+    if (!password) { setMsg($('loginMsg'), '请输入密码', false); return; }
+    var btn = $('loginBtn');
+    btn.disabled = true;
+    setMsg($('loginMsg'), '登录中...', true);
+    api('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: password }),
+    }).then(function () {
+      $('password').value = '';
+      setMsg($('loginMsg'), '', true);
+      enterDashboard();
+    }).catch(function (err) {
+      setMsg($('loginMsg'), err.message, false);
+    }).finally(function () {
+      btn.disabled = false;
+    });
+  };
+
+  $('password').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') $('loginBtn').click();
+  });
+
+  $('saveNoticeBtn').onclick = function () {
+    var btn = $('saveNoticeBtn');
+    btn.disabled = true;
+    setMsg($('noticeMsg'), '保存中...', true);
+    api('/api/notice', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: $('notice').value }),
+    }).then(function () {
+      setMsg($('noticeMsg'), '公告已保存', true);
+    }).catch(function (err) {
+      setMsg($('noticeMsg'), err.message, false);
+    }).finally(function () {
+      btn.disabled = false;
+    });
+  };
+
+  function selectFile(file) {
+    state.selected = file || null;
+    $('uploadBtn').disabled = !state.selected;
+    if (state.selected) {
+      $('drop').textContent = '已选择：' + state.selected.name + ' (' + formatBytes(state.selected.size) + ')';
+    } else {
+      $('drop').textContent = '点击选择文件，或拖拽到此处';
+    }
+  }
+
+  $('drop').onclick = function () { $('fileInput').click(); };
+  $('fileInput').onchange = function () { selectFile($('fileInput').files[0]); };
+
+  ['dragenter', 'dragover'].forEach(function (evt) {
+    $('drop').addEventListener(evt, function (e) {
+      e.preventDefault();
+      $('drop').classList.add('hover');
+    });
+  });
+  ['dragleave', 'drop'].forEach(function (evt) {
+    $('drop').addEventListener(evt, function (e) {
+      e.preventDefault();
+      $('drop').classList.remove('hover');
+    });
+  });
+  $('drop').addEventListener('drop', function (e) {
+    if (e.dataTransfer && e.dataTransfer.files.length) selectFile(e.dataTransfer.files[0]);
+  });
+
+  $('uploadBtn').onclick = function () {
+    if (!state.selected) return;
+    var btn = $('uploadBtn');
+    btn.disabled = true;
+    setMsg($('uploadMsg'), '上传中...', true);
+
+    var form = new FormData();
+    form.append('file', state.selected);
+    var displayName = $('displayName').value.trim();
+    var fileName = $('fileName').value.trim();
+    var desc = $('fileDesc').value.trim();
+    if (displayName) form.append('name', displayName);
+    if (fileName) form.append('key', fileName);
+    if (desc) form.append('desc', desc);
+
+    api('/api/files', { method: 'POST', body: form })
+      .then(function () {
+        setMsg($('uploadMsg'), '上传成功', true);
+        selectFile(null);
+        $('fileInput').value = '';
+        $('displayName').value = '';
+        $('fileName').value = '';
+        $('fileDesc').value = '';
+        return loadFiles();
+      })
+      .catch(function (err) {
+        setMsg($('uploadMsg'), err.message, false);
+      })
+      .finally(function () {
+        btn.disabled = !state.selected;
+      });
+  };
+
+  $('logoutBtn').onclick = function () {
+    api('/api/logout', { method: 'POST' }).then(function () {
+      show($('loginView'), true);
+      show($('dashboardView'), false);
+    });
+  };
+
+  fetch('/api/session', { credentials: 'same-origin' })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      if (!data.configured) show($('configWarning'), true);
+    })
+    .catch(function () {
+      show($('configWarning'), true);
+    });
+
+  checkSession();
+})();
+</script>
+</body>
+</html>

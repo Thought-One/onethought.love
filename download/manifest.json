@@ -1,0 +1,22 @@
+{
+  "generatedAt": "2026-09-13T12:08:45.935Z",
+  "count": 2,
+  "files": [
+    {
+      "name": "SkinsRestorer",
+      "file": "SkinsRestorer.jar",
+      "url": "download/SkinsRestorer.jar",
+      "size": 5039208,
+      "sizeText": "4.8 MB",
+      "desc": "Minecraft 皮肤还原插件，适用于服务端。",
+      "updated": "2025-05-18T06:43:36.000Z"
+    },
+    {
+      "name": "ubantu镜像文件",
+      "url": "https://www.123912.com/s/RJIgTd-RiYxv",
+      "desc": "官方Ubuntu系统镜像，适合虚拟机和物理机安装。",
+      "download": true,
+      "target": "_blank"
+    }
+  ]
+}

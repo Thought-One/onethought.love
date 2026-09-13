@@ -1,0 +1,40 @@
+name: Update download manifest
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "download/**"
+      - "scripts/generate-download-manifest.js"
+      - ".github/workflows/update-download-manifest.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Generate download/manifest.json
+        run: node scripts/generate-download-manifest.js
+
+      - name: Commit manifest if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add download/manifest.json
+          if git diff --cached --quiet; then
+            echo "清单无变化，跳过提交。"
+          else
+            git commit -m "chore: update download manifest [skip ci]"
+            git push
+          fi
