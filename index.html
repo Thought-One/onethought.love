@@ -61,18 +61,16 @@
             margin: 0;
             padding: 0;
         }
-        /* 静态背景：多层柔和渐变，纯 CSS 实现，无图片/视频请求 */
+        /* 静态背景：使用 res/index.png，加载失败时回退到渐变底色 */
         #globalBg {
             position: fixed;
             inset: 0;
             z-index: -1;
-            background:
-                radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 42%),
-                radial-gradient(circle at 82% 12%, rgba(178, 235, 242, 0.75), rgba(178, 235, 242, 0) 46%),
-                radial-gradient(circle at 78% 82%, rgba(128, 222, 234, 0.45), rgba(128, 222, 234, 0) 50%),
-                radial-gradient(circle at 25% 88%, rgba(224, 247, 250, 0.9), rgba(224, 247, 250, 0) 55%),
-                linear-gradient(160deg, #e0f7fa 0%, #d3f2f7 45%, #e8fbfd 100%);
             background-color: #e0f7fa;
+            background-image: url('res/index.png');
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
         }
         main {
             position: absolute;
@@ -476,7 +474,7 @@
     <footer>
         <div style="display:flex;align-items:center;justify-content:center;gap:24px;">
             <span>
-                &copy; 2024-2025 一思数据 | 联系我们：
+                &copy; 2024-2026 一思数据 | 联系我们：
                 <a href="mailto:onemiss0628@163.com" style="color:#0097a7;text-decoration:underline;">onemiss0628@163.com</a>
             </span>
             <img src="res/logo.png" alt="一思数据LOGO" style="width:100px;height:auto;display:inline-block;">
