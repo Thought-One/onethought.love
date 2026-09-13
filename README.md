@@ -107,15 +107,36 @@
 
 回到 **Deployments → Retry deployment**（或再 push 一次），让环境变量生效。
 
-部署完成后：
+部署完成后（默认域名为 `<Worker名>.<账号>.workers.dev`）：
 
 | 用途 | 地址 |
 |---|---|
-| 站点首页 | `https://<项目名>.pages.dev/` |
-| 后台管理 | `https://<项目名>.pages.dev/onemiss` |
-| 文件直链 | `https://<项目名>.pages.dev/download/<文件名>` |
+| 站点首页 | `https://<Worker名>.<账号>.workers.dev/` |
+| 后台管理 | `https://<Worker名>.<账号>.workers.dev/onemiss` |
+| 文件直链 | `https://<Worker名>.<账号>.workers.dev/download/<文件名>` |
 
 首页**没有**任何后台入口，只有知道 `/onemiss` 才能进入。
+
+### 第六步（可选）：绑定自定义域名（DigitalPlat 免费域名）
+
+DigitalPlat 只做域名注册，不提供 DNS 记录编辑，需把域名的 NS 委托给 Cloudflare。
+
+1. **Cloudflare 添加站点**：dash.cloudflare.com → **Add a site** → 输入 `onethought.dpdns.org` →
+   选择 **Free** 套餐 → 记下分配的两个 NS（如 `xxx.ns.cloudflare.com`、`yyy.ns.cloudflare.com`）。
+
+2. **DigitalPlat 设置自定义 NS**：登录 https://dash.domain.digitalplat.org/ →
+   选中该域名 → **Nameservers / External Nameservers** → 填入上面两个 Cloudflare NS → 保存。
+
+3. **等待生效**：几分钟到 24 小时。Cloudflare 站点状态变为 **Active** 即成功。
+
+4. **Worker 绑定自定义域**：Workers & Pages → `onethought-love` → **Settings → Domains & Routes** →
+   **Add → Custom Domain** → 填 `onethought.dpdns.org` → Add。
+   Cloudflare 会自动创建 DNS 记录并签发证书。
+
+5. 完成后访问 `https://onethought.dpdns.org/`，后台 `https://onethought.dpdns.org/onemiss`。
+
+> 国内访问说明：Cloudflare 免费版不含中国大陆网络，国内延迟通常 80–300ms，且免费域名无法 ICP 备案，
+> 因此用不了国内 CDN。若需更低延迟，可考虑香港/日本 VPS（无需备案，延迟约 30–100ms）。
 
 ## 后台使用
 

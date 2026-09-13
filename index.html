@@ -61,6 +61,19 @@
             margin: 0;
             padding: 0;
         }
+        /* 静态背景：多层柔和渐变，纯 CSS 实现，无图片/视频请求 */
+        #globalBg {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background:
+                radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 42%),
+                radial-gradient(circle at 82% 12%, rgba(178, 235, 242, 0.75), rgba(178, 235, 242, 0) 46%),
+                radial-gradient(circle at 78% 82%, rgba(128, 222, 234, 0.45), rgba(128, 222, 234, 0) 50%),
+                radial-gradient(circle at 25% 88%, rgba(224, 247, 250, 0.9), rgba(224, 247, 250, 0) 55%),
+                linear-gradient(160deg, #e0f7fa 0%, #d3f2f7 45%, #e8fbfd 100%);
+            background-color: #e0f7fa;
+        }
         main {
             position: absolute;
             top: 110px;
@@ -325,11 +338,8 @@
         <a href="javascript:void(0);" onclick="showMainContent(true)">首页</a>
         <a href="javascript:void(0);" onclick="showDataCenter(true)">数据中心</a>
     </div>
-    <!-- 全局视频背景，支持回退到纯色背景 -->
-    <video id="globalBgVideo" autoplay loop muted playsinline style="position:fixed;left:0;top:0;width:100vw;height:100vh;object-fit:cover;z-index:-1;display:block;background:#e0f7fa;">
-        <source src="res/vidio.mp4" type="video/mp4">
-        <!-- 如果不支持视频，自动显示body的背景色 -->
-    </video>
+    <!-- 全局静态背景（纯 CSS 渐变，无额外请求，加载更快） -->
+    <div id="globalBg" aria-hidden="true"></div>
     <!-- 樱花飘落特效canvas -->
     <canvas id="sakura-canvas" style="position:fixed;left:0;top:0;width:100vw;height:100vh;pointer-events:none;z-index:0;"></canvas>
     <main>
