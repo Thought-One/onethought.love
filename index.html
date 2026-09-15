@@ -177,15 +177,17 @@
             display: block;
             position: relative;
         }
-        #quick-bar.closed .quick-bar-icon-bar:nth-child(1) {
+        /* 展开时显示 X（提示可收起） */
+        #quick-bar:not(.closed) .quick-bar-icon-bar:nth-child(1) {
             transform: translateY(6px) rotate(45deg);
         }
-        #quick-bar.closed .quick-bar-icon-bar:nth-child(2) {
+        #quick-bar:not(.closed) .quick-bar-icon-bar:nth-child(2) {
             opacity: 0;
         }
-        #quick-bar.closed .quick-bar-icon-bar:nth-child(3) {
+        #quick-bar:not(.closed) .quick-bar-icon-bar:nth-child(3) {
             transform: translateY(-6px) rotate(-45deg);
         }
+        /* 关闭时显示三条杠（提示可展开），即默认状态 */
         @media (max-width: 600px) {
             #quick-bar {
                 padding-top: 70px;
