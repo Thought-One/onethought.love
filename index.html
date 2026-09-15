@@ -261,22 +261,25 @@
             display: none;
             margin-top: 10px;
             opacity: 0;
-            transition: opacity 0.8s;
         }
         .main-content.show {
             display: block;
             opacity: 1;
-            animation: fadeInUp 0.8s;
+            animation: viewIn 0.45s cubic-bezier(0.22, 1, 0.36, 1);
         }
-        @keyframes fadeInUp {
+        /* 页面切换的平滑入场动画 */
+        @keyframes viewIn {
             from {
                 opacity: 0;
-                transform: translateY(40px);
+                transform: translateY(18px);
             }
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
+        }
+        .view-enter {
+            animation: viewIn 0.45s cubic-bezier(0.22, 1, 0.36, 1);
         }
         .welcome-hide {
             animation: fadeOut 0.5s forwards;
@@ -538,24 +541,36 @@
                             li.style.margin = '18px 0';
                             var a = document.createElement('a');
                             var isJump = !!item.redirectUrl;
+                            // 统一下划线样式
+                            a.style = "color:#0097a7;text-decoration:underline;";
+                            var label = item.name || item.key || item.file || item.url;
                             if (isCollection) {
                                 // txt 内含多个「名称:"网址"」-> 打开分页详情
                                 a.href = 'javascript:void(0);';
-                                a.textContent = (item.name || item.key || '链接列表') + '（' + links.length + ' 个链接）';
-                                a.style = "color:#fff;background:#00bcd4;padding:6px 16px;border-radius:4px;text-decoration:none;display:inline-block;";
                                 a.onclick = (function(it) { return function() { openLinkDetail(it); }; })(item);
                             } else if (isJump) {
                                 a.href = item.redirectUrl;
-                                a.textContent = item.name || item.file || item.url;
-                                a.style = "color:#fff;background:#00bcd4;padding:6px 16px;border-radius:4px;text-decoration:none;display:inline-block;";
                                 a.setAttribute('target', item.target || '_blank');
                                 a.setAttribute('rel', 'noopener');
                             } else {
                                 a.href = item.url;
-                                a.textContent = item.name || item.file || item.url;
-                                a.style = "color:#0097a7;text-decoration:underline;";
                                 if (item.download !== false) a.setAttribute('download', item.file || '');
                                 if (item.target) a.setAttribute('target', item.target);
+                            }
+                            a.appendChild(document.createTextNode(label));
+                            // 小标志：列表 / 跳转（不影响下划线的整体观感）
+                            var badge = null;
+                            if (isCollection) {
+                                badge = { text: '列表', title: '包含多个链接，点击查看' };
+                            } else if (isJump) {
+                                badge = { text: '跳转', title: '点击跳转到外部网站' };
+                            }
+                            if (badge) {
+                                var mark = document.createElement('span');
+                                mark.textContent = badge.text;
+                                mark.title = badge.title;
+                                mark.style = "margin-left:6px;font-size:0.72em;color:#0097a7;border:1px solid #80deea;border-radius:3px;padding:0 5px;vertical-align:middle;text-decoration:none;";
+                                a.appendChild(mark);
                             }
                             li.appendChild(a);
                             var meta = [];
@@ -597,6 +612,14 @@
         var LINK_PAGE_SIZE = 8;
         var linkState = { items: [], page: 0, title: '' };
 
+        // 重新触发入场动画
+        function replayViewAnimation(el) {
+            if (!el) return;
+            el.classList.remove('view-enter');
+            void el.offsetWidth;
+            el.classList.add('view-enter');
+        }
+
         function resetLinkDetailView() {
             var lv = document.getElementById('dataCenterListView');
             var dv = document.getElementById('linkDetailView');
@@ -614,13 +637,18 @@
             var dv = document.getElementById('linkDetailView');
             var title = document.getElementById('linkDetailTitle');
             if (lv) lv.style.display = 'none';
-            if (dv) dv.style.display = 'block';
+            if (dv) {
+                dv.style.display = 'block';
+                replayViewAnimation(dv);
+            }
             if (title) title.textContent = linkState.title;
             renderLinkPage();
         }
 
         function closeLinkDetail() {
+            var lv = document.getElementById('dataCenterListView');
             resetLinkDetailView();
+            replayViewAnimation(lv);
         }
 
         function renderLinkPage() {
