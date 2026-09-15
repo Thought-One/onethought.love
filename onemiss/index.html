@@ -147,7 +147,9 @@
         <button id="uploadBtn" disabled>开始上传</button>
         <span class="msg" id="uploadMsg"></span>
       </div>
-      <div class="hint">单文件上限约 95MB；更大的文件请使用外链方式。<br>上传 .txt 文件时，若内容中有被引号包裹的网址（如 “https://example.com”），该条目在首页点击将直接跳转到该网站。</div>
+      <div class="hint">单文件上限约 95MB；更大的文件请使用外链方式。<br>上传 .txt 文件时，支持 <code>名称:"网址"</code> 格式（每行一条，可加行尾介绍）：<br>
+        <code>百度:"https://www.baidu.com" 中国最大的搜索引擎</code><br>
+        单个网址 → 首页点击直接跳转；多个网址 → 首页显示为「N 个链接」，点开为分页列表。</div>
     </div>
 
     <div class="card">

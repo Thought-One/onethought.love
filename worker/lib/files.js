@@ -10,16 +10,37 @@ function isReserved(key) {
   return key.startsWith(RESERVED_PREFIX);
 }
 
-// 从 txt 内容中提取被中文引号（或英文引号）包裹的网址
-function extractRedirectUrl(text) {
-  const match = String(text || '').match(/[“"]([^”"\n]+)[”"]/);
-  if (!match) return '';
-  let url = match[1].trim();
+function normalizeUrl(raw) {
+  let url = String(raw || '').trim();
+  if (!url) return '';
   if (!/^https?:\/\//i.test(url)) {
     if (/^[\w-]+(\.[\w-]+)+([/?#].*)?$/i.test(url)) url = 'https://' + url;
     else return '';
   }
   return url;
+}
+
+// 解析形如  名称:"网址"  的条目（支持中英文冒号与引号），行尾文字作为介绍
+function extractLinks(text) {
+  const source = String(text || '');
+  const links = [];
+  const seen = new Set();
+  const re = /([^\n:："“”"'<>]{1,60})\s*[:：]\s*["“]([^"”\n]+)["”][ \t]*([^\n]*)/g;
+  let match;
+  while ((match = re.exec(source))) {
+    const name = match[1].trim().replace(/^[-*\d.、\s]+/, '').trim();
+    const url = normalizeUrl(match[2]);
+    if (!url || seen.has(url)) continue;
+    seen.add(url);
+    links.push({ name: name || url, url, desc: match[3].trim().slice(0, 200) });
+  }
+  return links;
+}
+
+// 兜底：没有「名称:"网址"」结构时，取第一个被引号包裹的网址
+function extractBareUrl(text) {
+  const match = String(text || '').match(/[“"]([^”"\n]+)[”"]/);
+  return match ? normalizeUrl(match[1]) : '';
 }
 
 async function readIndex(env) {
@@ -41,6 +62,8 @@ function serialize(key, meta, fallback) {
   const size = Number.isFinite(info.size) ? info.size : (fallback && fallback.size) || 0;
   const uploaded = info.uploaded || (fallback && fallback.lastModified) || null;
   const redirectUrl = info.redirectUrl || '';
+  const links = Array.isArray(info.links) ? info.links : [];
+  const isCollection = links.length > 1;
   return {
     key,
     name: info.name || key.split('/').pop(),
@@ -49,8 +72,9 @@ function serialize(key, meta, fallback) {
     sizeText: formatBytes(size),
     uploaded,
     url: publicFileUrl(key),
-    download: !redirectUrl,
+    download: !redirectUrl && !isCollection,
     redirectUrl,
+    links,
   };
 }
 
@@ -110,13 +134,19 @@ export async function onRequestPost({ request, env }) {
 
   const buffer = await file.arrayBuffer();
 
-  // txt 文件：若内容中有被引号包裹的网址，则点击时直接跳转
-  let redirectUrl = '';
+  // txt 文件：解析 名称:"网址" 条目。
+  // 单个网址 -> 点击直接跳转；多个网址 -> 前台展示为分页列表。
+  let links = [];
   if (/\.txt$/i.test(key)) {
     try {
-      redirectUrl = extractRedirectUrl(new TextDecoder('utf-8').decode(buffer));
+      const text = new TextDecoder('utf-8').decode(buffer);
+      links = extractLinks(text);
+      if (!links.length) {
+        const bare = extractBareUrl(text);
+        if (bare) links = [{ name: displayName, url: bare, desc: '' }];
+      }
     } catch (err) {
-      redirectUrl = '';
+      links = [];
     }
   }
 
@@ -133,7 +163,8 @@ export async function onRequestPost({ request, env }) {
     size: file.size,
     uploaded: new Date().toISOString(),
   };
-  if (redirectUrl) entry.redirectUrl = redirectUrl;
+  if (links.length) entry.links = links;
+  if (links.length === 1) entry.redirectUrl = links[0].url;
   index[key] = entry;
   await b2PutJson(env, INDEX_KEY, index);
 
