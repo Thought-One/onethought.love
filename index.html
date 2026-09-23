@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>一思数据</title>
     <link rel="icon" href="res/indexphoto.jpg" type="image/jpeg" sizes="256x256">
+    <link rel="preconnect" href="https://v1.hitokoto.cn" crossorigin>
+    <link rel="dns-prefetch" href="https://v1.hitokoto.cn">
+    <script>
+    // 提前发起一言请求（页面解析阶段就请求，进入主页时通常已就绪）
+    window.__hitokotoPromise = fetch('https://v1.hitokoto.cn/?encode=json', { cache: 'no-store' })
+        .then(function(r){ if (!r.ok) throw new Error('failed'); return r.json(); })
+        .catch(function(){ return null; });
+    </script>
     <script>
     // 本地 file:// 或清单加载失败时的兜底列表（线上优先读取 download/manifest.json）
     window.downloadList = [
@@ -321,6 +329,119 @@
             from { opacity: 1; transform: scale(1);}
             to   { opacity: 0; transform: scale(0.95);}
         }
+        /* ===== 一言卡片 ===== */
+        .hitokoto-card {
+            background: rgba(255,255,255,0.6);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,188,212,0.08);
+            padding: 22px 30px 20px;
+            /* 宽度随内容自适应：内容放不下时自动变宽，超过上限再换行 */
+            width: fit-content;
+            min-width: 260px;
+            max-width: min(92vw, 560px);
+            margin: 0 auto;
+            box-sizing: border-box;
+            text-align: left;
+        }
+        .hitokoto-card h3 {
+            color: #0097a7;
+            margin: 0;
+            text-align: left;
+            font-size: 1.05em;
+            font-weight: 600;
+            letter-spacing: 0.22em;
+            text-indent: 0.22em;
+        }
+        .hitokoto-card h3::after {
+            content: "";
+            display: block;
+            width: 28px;
+            height: 2px;
+            margin: 8px 0 0;
+            border-radius: 2px;
+            background: rgba(0,151,167,0.35);
+        }
+        .hitokoto-quote {
+            position: relative;
+            text-align: left;
+            min-height: 3.4em;
+            margin: 16px 0 6px;
+            padding: 0;
+            line-height: 1.85;
+            font-size: 1.06em;
+            color: #006064;
+            word-break: break-word;
+            text-wrap: pretty;
+        }
+        .hitokoto-from {
+            text-align: left;
+            color: #00838f;
+            font-size: 0.88em;
+            margin: 0 0 16px;
+            min-height: 1.3em;
+            letter-spacing: 0.02em;
+        }
+        .hitokoto-refresh {
+            display: block;
+            margin: 0;
+            color: #fff;
+            background: #00bcd4;
+            padding: 8px 24px;
+            border: none;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 0.95em;
+            letter-spacing: 0.08em;
+            box-shadow: 0 2px 6px rgba(0,188,212,0.28);
+            transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+        }
+        .hitokoto-refresh:hover {
+            background: #00acc1;
+            box-shadow: 0 4px 12px rgba(0,188,212,0.4);
+        }
+        .hitokoto-refresh:active {
+            transform: scale(0.95);
+        }
+        /* 刷新动画：整框缩放淡出/淡入 + 内文轻微位移 */
+        .hitokoto-quote,
+        .hitokoto-from {
+            transition: opacity 0.22s ease, transform 0.22s ease;
+        }
+        .hitokoto-card.swap-out {
+            animation: hitokotoCardOut 0.22s ease forwards;
+        }
+        .hitokoto-card.swap-out .hitokoto-quote,
+        .hitokoto-card.swap-out .hitokoto-from {
+            opacity: 0;
+            transform: translateY(-8px);
+        }
+        .hitokoto-card.swap-in {
+            animation: hitokotoCardIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        .hitokoto-card.swap-in .hitokoto-quote,
+        .hitokoto-card.swap-in .hitokoto-from {
+            animation: hitokotoIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        @keyframes hitokotoIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes hitokotoCardOut {
+            from { opacity: 1; transform: scale(1) translateY(0); }
+            to   { opacity: 0; transform: scale(0.97) translateY(-6px); }
+        }
+        @keyframes hitokotoCardIn {
+            from { opacity: 0; transform: scale(0.96) translateY(10px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .hitokoto-card.swap-out,
+            .hitokoto-card.swap-in,
+            .hitokoto-card.swap-in .hitokoto-quote,
+            .hitokoto-card.swap-in .hitokoto-from {
+                animation: none;
+            }
+        }
     </style>
     <div class="head-flex">
         <span class="logo-title">
@@ -350,13 +471,12 @@
     <main>
         <div id="mainContent" class="main-content show" style="display:block;">
             <div style="display: flex; flex-direction: column; align-items: center; gap: 30px; margin-top: 30px;">
-                <!-- Bilibili主页模块 居中 -->
-                <div style="background:rgba(255,255,255,0.6); border-radius:10px; box-shadow:0 2px 8px rgba(0,188,212,0.08); padding:24px 32px; min-width:220px; max-width:340px; margin:0 auto;">
-                    <h3 style="color:#0097a7; margin-top:0; text-align:center;">Bilibili主页</h3>
-                    <p style="text-align:center;">访问我的Bilibili主页，获取更多视频内容</p>
-                    <div style="display:flex;justify-content:center;">
-                        <a href="https://space.bilibili.com/547783759" target="_blank" style="color:#fff; background:#00bcd4; padding:8px 18px; border-radius:4px; text-decoration:none; display:inline-block;">前往B站主页</a>
-                    </div>
+                <!-- 一言模块 居中 -->
+                <div id="hitokotoCard" class="hitokoto-card">
+                    <h3>一言</h3>
+                    <p id="hitokotoText" class="hitokoto-quote">正在加载…</p>
+                    <p id="hitokotoFrom" class="hitokoto-from"></p>
+                    <button class="hitokoto-refresh" onclick="loadHitokoto(true)">换一句</button>
                 </div>
                 <!-- 公告窗口 -->
                 <div id="noticeBox" style="background:rgba(255,255,255,0.5);border-radius:10px;box-shadow:0 2px 8px rgba(0,188,212,0.08);padding:18px 24px;max-width:340px;width:100%;margin:0 auto;text-align:center;color:#006064;font-size:1.08em;"></div>
@@ -496,9 +616,110 @@
                 });
         }
 
+        // 一言：预取 + 缓存，进入主页时秒显；连续刷新不重复
+        var hitokotoCache = null;   // 预取好的下一条
+        var hitokotoCurrent = '';   // 当前显示文本，用于去重
+        var hitokotoPending = null; // 进行中的请求
+
+        function requestHitokoto(exclude, tries) {
+            tries = tries || 0;
+            var p;
+            if (tries === 0 && window.__hitokotoPromise) {
+                p = window.__hitokotoPromise;
+                window.__hitokotoPromise = null;
+            } else {
+                p = fetch('https://v1.hitokoto.cn/?encode=json&_=' + Date.now(), { cache: 'no-store' })
+                    .then(function(r){ if (!r.ok) throw new Error('failed'); return r.json(); });
+            }
+            return p.then(function(data){
+                if (data === null && tries === 0) return requestHitokoto(exclude, tries);
+                if (!data || !data.hitokoto) throw new Error('empty');
+                // 与上一条相同则重试（最多 4 次）
+                if (exclude && data.hitokoto === exclude && tries < 4) return requestHitokoto(exclude, tries + 1);
+                return data;
+            });
+        }
+
+        function formatHitokotoFrom(data) {
+            var from = data.from || '';
+            var who = data.from_who || '';
+            if (who && from) return '—— ' + who + '《' + from + '》';
+            if (from) return '—— 《' + from + '》';
+            if (who) return '—— ' + who;
+            return '';
+        }
+
+        function playHitokotoIn(card) {
+            if (!card) return;
+            card.classList.remove('swap-out');
+            card.classList.remove('swap-in');
+            void card.offsetWidth; // 强制重排以重启动画
+            card.classList.add('swap-in');
+        }
+
+        function renderHitokoto(data, animate) {
+            var card = document.getElementById('hitokotoCard');
+            var textEl = document.getElementById('hitokotoText');
+            var fromEl = document.getElementById('hitokotoFrom');
+            if (!textEl || !data) return;
+            var hasContent = textEl.textContent && textEl.textContent !== '正在加载…';
+            var apply = function() {
+                textEl.textContent = data.hitokoto;
+                hitokotoCurrent = data.hitokoto;
+                if (fromEl) fromEl.textContent = formatHitokotoFrom(data);
+                playHitokotoIn(card);
+            };
+            // 刷新时先让旧内容淡出，再写入新内容并淡入
+            if (animate && hasContent && card) {
+                card.classList.remove('swap-in');
+                card.classList.add('swap-out');
+                setTimeout(apply, 220);
+            } else {
+                apply();
+            }
+        }
+
+        function prefetchHitokoto() {
+            if (hitokotoCache || hitokotoPending) return hitokotoPending;
+            hitokotoPending = requestHitokoto(hitokotoCurrent, 0)
+                .then(function(data){ hitokotoCache = data; hitokotoPending = null; return data; })
+                .catch(function(e){ hitokotoPending = null; throw e; });
+            return hitokotoPending;
+        }
+
+        function loadHitokoto(animate) {
+            var textEl = document.getElementById('hitokotoText');
+            if (!textEl) return;
+            // 已有预取结果：立即显示，并预取再下一条
+            if (hitokotoCache) {
+                renderHitokoto(hitokotoCache, animate);
+                hitokotoCache = null;
+                prefetchHitokoto();
+                return;
+            }
+            var fromEl = document.getElementById('hitokotoFrom');
+            var card = document.getElementById('hitokotoCard');
+            if (card) {
+                card.classList.remove('swap-out');
+                card.classList.remove('swap-in');
+            }
+            if (fromEl) fromEl.textContent = '';
+            textEl.textContent = '正在加载…';
+            prefetchHitokoto()
+                .then(function(data){
+                    renderHitokoto(data, false);
+                    prefetchHitokoto(); // 提前准备下一次
+                })
+                .catch(function(){
+                    textEl.textContent = '一言获取失败，请稍后重试。';
+                    if (fromEl) fromEl.textContent = '';
+                });
+        }
+
         // 页面切换函数（不修改地址栏，避免出现 #main）
         function showMainContent() {
             loadNoticeBox(); // 每次切换主页都刷新公告
+            loadHitokoto(); // 每次进入主页都更换一言
             var mainContent = document.getElementById('mainContent');
             var dataCenterPage = document.getElementById('dataCenterPage');
             if (dataCenterPage) {
@@ -707,7 +928,6 @@
 
         // 页面初始加载
         window.addEventListener('DOMContentLoaded', function() {
-            loadNoticeBox();
             var mainContent = document.getElementById('mainContent');
             if (mainContent) {
                 mainContent.classList.add('show');
