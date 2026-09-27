@@ -1,8 +1,9 @@
 ﻿import { isAuthenticated } from './auth.js';
 import { json, error, formatBytes, publicFileUrl } from './http.js';
-import { b2Configured, b2Debug, b2ListAll, b2Put, b2Delete, b2GetJson, b2PutJson } from './b2.js';
+import { b2Configured, b2Debug, b2ListAll, b2Put, b2Delete } from './b2.js';
+import { iconType } from './filetype.js';
+import { readIndex, writeIndex, readFolders } from './store.js';
 
-const INDEX_KEY = '_config/index.json';
 const RESERVED_PREFIX = '_';
 const MAX_UPLOAD_BYTES = 95 * 1024 * 1024;
 
@@ -43,11 +44,6 @@ function extractBareUrl(text) {
   return match ? normalizeUrl(match[1]) : '';
 }
 
-async function readIndex(env) {
-  const data = await b2GetJson(env, INDEX_KEY);
-  return data && typeof data === 'object' ? data : {};
-}
-
 function sanitizeKey(raw) {
   return String(raw || '')
     .replace(/\\/g, '/')
@@ -64,10 +60,13 @@ function serialize(key, meta, fallback) {
   const redirectUrl = info.redirectUrl || '';
   const links = Array.isArray(info.links) ? info.links : [];
   const isCollection = links.length > 1;
+  const name = info.name || key.split('/').pop();
   return {
     key,
-    name: info.name || key.split('/').pop(),
+    name,
     desc: info.desc || '',
+    folder: info.folder || '',
+    type: iconType(name, { collection: isCollection, redirect: Boolean(redirectUrl) }),
     size,
     sizeText: formatBytes(size),
     uploaded,
@@ -99,13 +98,13 @@ export async function onRequestGet({ request, env }) {
     return error(message + hint, 502);
   }
 
-  const index = await readIndex(env);
+  const [index, folders] = await Promise.all([readIndex(env), readFolders(env)]);
   const files = listed
     .filter((object) => !isReserved(object.key))
     .map((object) => serialize(object.key, index[object.key], object))
     .sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
 
-  return json({ files, count: files.length });
+  return json({ files, folders, count: files.length });
 }
 
 export async function onRequestPost({ request, env }) {
@@ -131,6 +130,7 @@ export async function onRequestPost({ request, env }) {
 
   const desc = String(form.get('desc') || '').slice(0, 500);
   const displayName = String(form.get('name') || '').slice(0, 200) || key.split('/').pop();
+  const folder = String(form.get('folder') || '').trim().slice(0, 60);
 
   const buffer = await file.arrayBuffer();
 
@@ -163,12 +163,45 @@ export async function onRequestPost({ request, env }) {
     size: file.size,
     uploaded: new Date().toISOString(),
   };
+  if (folder) entry.folder = folder;
   if (links.length) entry.links = links;
   if (links.length === 1) entry.redirectUrl = links[0].url;
   index[key] = entry;
-  await b2PutJson(env, INDEX_KEY, index);
+  await writeIndex(env, index);
 
   return json({ ok: true, file: serialize(key, entry) });
+}
+
+// 修改已有文件的归属文件夹或显示名称
+export async function onRequestPatch({ request, env }) {
+  if (!(await isAuthenticated(request, env))) return error('未登录', 401);
+  if (!b2Configured(env)) return error('未配置 Backblaze B2 存储', 500);
+
+  let body;
+  try {
+    body = await request.json();
+  } catch (err) {
+    return error('请求格式错误');
+  }
+
+  const key = sanitizeKey(body.key);
+  if (!key) return error('缺少 key 参数');
+  if (isReserved(key)) return error('不能修改系统文件');
+
+  const index = await readIndex(env);
+  if (!index[key]) return error('文件不存在', 404);
+
+  if (typeof body.folder === 'string') {
+    const folder = body.folder.trim().slice(0, 60);
+    if (folder) index[key].folder = folder;
+    else delete index[key].folder;
+  }
+  if (typeof body.name === 'string' && body.name.trim()) {
+    index[key].name = body.name.trim().slice(0, 200);
+  }
+
+  await writeIndex(env, index);
+  return json({ ok: true, file: serialize(key, index[key]) });
 }
 
 export async function onRequestDelete({ request, env }) {
@@ -187,7 +220,7 @@ export async function onRequestDelete({ request, env }) {
   const index = await readIndex(env);
   if (index[key]) {
     delete index[key];
-    await b2PutJson(env, INDEX_KEY, index);
+    await writeIndex(env, index);
   }
 
   return json({ ok: true });

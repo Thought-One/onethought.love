@@ -1,7 +1,8 @@
 import { onRequestPost as login } from './lib/login.js';
 import { onRequestPost as logout } from './lib/logout.js';
 import { onRequestGet as session } from './lib/session.js';
-import { onRequestGet as filesGet, onRequestPost as filesPost, onRequestDelete as filesDelete } from './lib/files.js';
+import { onRequestGet as filesGet, onRequestPost as filesPost, onRequestPatch as filesPatch, onRequestDelete as filesDelete } from './lib/files.js';
+import { onRequestGet as foldersGet, onRequestPost as foldersPost, onRequestPatch as foldersPatch, onRequestDelete as foldersDelete } from './lib/folders.js';
 import { onRequestGet as noticeGet, onRequestPut as noticePut } from './lib/notice.js';
 import { serveDownload } from './lib/download.js';
 
@@ -11,7 +12,12 @@ const ROUTES = {
   'GET /api/session': session,
   'GET /api/files': filesGet,
   'POST /api/files': filesPost,
+  'PATCH /api/files': filesPatch,
   'DELETE /api/files': filesDelete,
+  'GET /api/folders': foldersGet,
+  'POST /api/folders': foldersPost,
+  'PATCH /api/folders': foldersPatch,
+  'DELETE /api/folders': foldersDelete,
   'GET /api/notice': noticeGet,
   'PUT /api/notice': noticePut,
 };

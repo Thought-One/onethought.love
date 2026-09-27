@@ -443,6 +443,140 @@
             }
         }
     </style>
+    <style>
+        /* ===== 现代化视觉与数据中心 ===== */
+        :root {
+            --brand: #0097a7;
+            --brand-strong: #00838f;
+            --accent: #00bcd4;
+            --card: rgba(255,255,255,0.78);
+            --text-main: #084c54;
+            --muted: #5d7c84;
+            --border: rgba(0,151,167,0.16);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --shadow: 0 10px 30px rgba(0,131,143,0.12);
+            --shadow-hover: 0 18px 44px rgba(0,131,143,0.18);
+        }
+        body { color: var(--text-main); -webkit-font-smoothing: antialiased; }
+        .head-flex { animation: dcIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .logo-title { letter-spacing: 3px; text-shadow: 0 2px 10px rgba(255,255,255,0.6); }
+
+        .dc-shell {
+            position: relative;
+            z-index: 1;
+            background: var(--card);
+            -webkit-backdrop-filter: blur(14px) saturate(1.15);
+            backdrop-filter: blur(14px) saturate(1.15);
+            max-width: 720px;
+            margin: 34px auto 60px;
+            padding: 28px 30px 24px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            text-align: left;
+            min-height: 60vh;
+            animation: dcIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        @keyframes dcIn {
+            from { opacity: 0; transform: translateY(18px); }
+            to   { opacity: 1; transform: none; }
+        }
+        .dc-head h2 { margin: 12px 0 4px; font-size: 1.5em; color: var(--brand-strong); }
+        .dc-sub { color: var(--muted); font-size: 0.92em; margin: 0 0 18px; }
+
+        .back-btn {
+            background: rgba(255,255,255,0.7);
+            color: var(--brand-strong);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 7px 16px;
+            font-size: 0.92em;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+        }
+        .back-btn:hover { background: #fff; box-shadow: var(--shadow); transform: translateX(-2px); }
+
+        .folder-bar { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
+        .folder-chip {
+            display: inline-flex; align-items: center; gap: 7px;
+            background: rgba(255,255,255,0.8);
+            border: 1px solid var(--border);
+            color: var(--brand-strong);
+            border-radius: 999px;
+            padding: 7px 15px;
+            font-size: 0.92em;
+            cursor: pointer;
+            font-family: inherit;
+            transition: transform 0.2s cubic-bezier(0.22,1,0.36,1), box-shadow 0.2s ease, background 0.2s ease;
+        }
+        .folder-chip img { width: 16px; height: 16px; }
+        .folder-chip:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+        .folder-chip.active {
+            background: linear-gradient(135deg, var(--accent), var(--brand));
+            color: #fff; border-color: transparent;
+            box-shadow: 0 8px 20px rgba(0,151,167,0.28);
+        }
+        .folder-chip.active img { filter: brightness(0) invert(1); }
+        .folder-chip .fc-count { opacity: 0.72; font-size: 0.85em; }
+
+        .file-card-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+        .file-card {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 16px;
+            border-radius: var(--radius-sm);
+            background: rgba(255,255,255,0.62);
+            border: 1px solid var(--border);
+            transition: transform 0.2s cubic-bezier(0.22,1,0.36,1), box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+        }
+        .file-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); background: #fff; border-color: transparent; }
+        .file-card-icon { width: 40px; height: 40px; flex-shrink: 0; }
+        .file-card-main { flex: 1 1 auto; min-width: 0; }
+        .file-card-name {
+            color: var(--brand);
+            text-decoration: underline;
+            text-decoration-color: rgba(0,151,167,0.4);
+            text-underline-offset: 3px;
+            font-size: 1.06em;
+            font-weight: 600;
+            word-break: break-word;
+        }
+        .file-card:hover .file-card-name { color: var(--brand-strong); text-decoration-color: var(--brand-strong); }
+        .file-card-meta { color: var(--muted); font-size: 0.88em; margin-top: 4px; word-break: break-all; }
+        .badge {
+            margin-left: 8px; font-size: 0.68em; font-weight: 600;
+            color: var(--brand-strong); border: 1px solid rgba(0,188,212,0.5);
+            border-radius: 6px; padding: 1px 7px; vertical-align: middle;
+            text-decoration: none; display: inline-block; background: rgba(0,188,212,0.08);
+        }
+        .file-card-arrow { color: var(--brand); font-size: 1.2em; flex-shrink: 0; opacity: 0.45; transition: transform 0.2s ease, opacity 0.2s ease; }
+        .file-card:hover .file-card-arrow { transform: translateX(3px); opacity: 1; }
+        .dc-empty { color: var(--muted); padding: 22px 4px; text-align: center; }
+
+        .notice-card {
+            background: var(--card);
+            -webkit-backdrop-filter: blur(12px) saturate(1.15);
+            backdrop-filter: blur(12px) saturate(1.15);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 18px 24px;
+            max-width: 360px;
+            width: 100%;
+            margin: 0 auto;
+            text-align: center;
+            color: var(--text-main);
+            font-size: 1.03em;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 600px) {
+            .dc-shell { margin: 18px auto 40px; padding: 20px 16px; border-radius: 14px; }
+            .file-card { padding: 12px; gap: 11px; }
+            .file-card-icon { width: 34px; height: 34px; }
+        }
+    </style>
     <div class="head-flex">
         <span class="logo-title">
             一思数据
@@ -479,27 +613,26 @@
                     <button class="hitokoto-refresh" onclick="loadHitokoto(true)">换一句</button>
                 </div>
                 <!-- 公告窗口 -->
-                <div id="noticeBox" style="background:rgba(255,255,255,0.5);border-radius:10px;box-shadow:0 2px 8px rgba(0,188,212,0.08);padding:18px 24px;max-width:340px;width:100%;margin:0 auto;text-align:center;color:#006064;font-size:1.08em;"></div>
+                <div id="noticeBox" class="notice-card"></div>
             </div>
         </div>
         <!-- 数据中心页面，集成下载功能 -->
-        <div id="dataCenterPage" class="main-content" style="display:none; position:relative; overflow:hidden;">
-            <div style="position:relative;z-index:1;background:rgba(255,255,255,0.6);max-width:700px;margin:40px auto 40px auto;padding:36px 32px 32px 32px;border-radius:12px;box-shadow:0 4px 16px rgba(0,188,212,0.10);min-height:60vh;">
+        <div id="dataCenterPage" class="main-content" style="display:none;">
+            <div class="dc-shell">
                 <div id="dataCenterListView">
-                    <div style="text-align:left;">
-                        <button onclick="showMainContent(true)" style="background:none;border:none;color:#0097a7;font-size:1.5em;cursor:pointer;padding:0 0 10px 0;">&#8592; 返回</button>
+                    <button class="back-btn" onclick="showMainContent(true)">&#8592; 返回首页</button>
+                    <div class="dc-head">
+                        <h2>数据中心</h2>
+                        <p class="dc-sub">按分类浏览并下载所需文件</p>
                     </div>
-                    <h2 style="margin-top:0;">数据中心</h2>
-                    <h3 style="color:#0097a7;">文件下载</h3>
-                    <ul id="dataCenterDownloadList" style="list-style:none;padding:0;"></ul>
+                    <div id="folderBar" class="folder-bar"></div>
+                    <ul id="dataCenterDownloadList" class="file-card-list"></ul>
                 </div>
                 <div id="linkDetailView" style="display:none;">
-                    <div style="text-align:left;">
-                        <button onclick="closeLinkDetail()" style="background:none;border:none;color:#0097a7;font-size:1.5em;cursor:pointer;padding:0 0 10px 0;">&#8592; 返回</button>
-                    </div>
-                    <h2 id="linkDetailTitle" style="margin-top:0;">链接列表</h2>
-                    <ul id="linkDetailList" style="list-style:none;padding:0;"></ul>
-                    <div id="linkPager" style="display:flex;justify-content:center;align-items:center;gap:14px;margin-top:20px;"></div>
+                    <button class="back-btn" onclick="closeLinkDetail()">&#8592; 返回列表</button>
+                    <div class="dc-head"><h2 id="linkDetailTitle">链接列表</h2></div>
+                    <ul id="linkDetailList" class="file-card-list"></ul>
+                    <div id="linkPager" style="display:flex;justify-content:center;align-items:center;gap:14px;margin-top:22px;"></div>
                 </div>
             </div>
         </div>
@@ -732,6 +865,193 @@
             }
         }
 
+        // ===== 数据中心：文件夹分类 + 文件图标 =====
+        var dcState = { files: [], folders: [], active: 'all' };
+        var DC_EXT_TYPES = {
+            pdf: 'pdf', doc: 'doc', docx: 'doc', rtf: 'doc', odt: 'doc',
+            xls: 'xls', xlsx: 'xls', csv: 'xls', ods: 'xls',
+            ppt: 'ppt', pptx: 'ppt', odp: 'ppt',
+            zip: 'zip', rar: 'zip', '7z': 'zip', tar: 'zip', gz: 'zip', bz2: 'zip', xz: 'zip', tgz: 'zip',
+            png: 'image', jpg: 'image', jpeg: 'image', gif: 'image', webp: 'image', bmp: 'image', svg: 'image', ico: 'image', avif: 'image', tif: 'image', tiff: 'image',
+            mp4: 'video', mkv: 'video', avi: 'video', mov: 'video', webm: 'video', flv: 'video', wmv: 'video', m4v: 'video', mpg: 'video',
+            mp3: 'audio', wav: 'audio', flac: 'audio', ogg: 'audio', m4a: 'audio', aac: 'audio', wma: 'audio',
+            html: 'html', htm: 'html', css: 'css', scss: 'css', less: 'css',
+            js: 'js', mjs: 'js', cjs: 'js', ts: 'js', jsx: 'js', tsx: 'js',
+            json: 'json', map: 'json', txt: 'txt', log: 'txt', md: 'txt', markdown: 'txt',
+            ttf: 'font', otf: 'font', woff: 'font', woff2: 'font',
+            exe: 'exe', msi: 'exe', dmg: 'exe', deb: 'exe', rpm: 'exe', iso: 'exe', apk: 'apk',
+            db: 'db', sqlite: 'db', sql: 'db', conf: 'config', ini: 'config', yaml: 'config', yml: 'config', toml: 'config', xml: 'config'
+        };
+
+        function dcGuessType(item) {
+            if (item && item.type) return item.type;
+            var source = (item && (item.name || item.key || item.file || item.url)) || '';
+            var base = source.split('/').pop().split('?')[0];
+            var dot = base.lastIndexOf('.');
+            var ext = dot > 0 ? base.slice(dot + 1).toLowerCase() : '';
+            return DC_EXT_TYPES[ext] || 'file';
+        }
+        function dcIconSrc(item) { return 'res/icons/' + dcGuessType(item) + '.svg'; }
+        function dcFolderName(id) {
+            for (var i = 0; i < dcState.folders.length; i += 1) {
+                if (dcState.folders[i].id === id) return dcState.folders[i].name;
+            }
+            return '';
+        }
+        function dcCategoryOf(item) {
+            return (item && item.folder && dcFolderName(item.folder)) ? item.folder : '';
+        }
+
+        function renderFolderBar() {
+            var bar = document.getElementById('folderBar');
+            if (!bar) return;
+            bar.innerHTML = '';
+            var counts = { all: dcState.files.length, '': 0 };
+            dcState.folders.forEach(function (f) { counts[f.id] = 0; });
+            dcState.files.forEach(function (item) {
+                var cat = dcCategoryOf(item);
+                if (cat) counts[cat] += 1; else counts[''] += 1;
+            });
+            var chips = [{ id: 'all', name: '全部', icon: 'res/icons/world.svg' }];
+            dcState.folders.forEach(function (f) { chips.push({ id: f.id, name: f.name, icon: 'res/icons/folder.svg' }); });
+            chips.push({ id: '', name: '未分类', icon: 'res/icons/file.svg' });
+            chips.forEach(function (chip) {
+                var btn = document.createElement('button');
+                btn.className = 'folder-chip' + (dcState.active === chip.id ? ' active' : '');
+                var img = document.createElement('img');
+                img.src = chip.icon;
+                img.alt = '';
+                var label = document.createElement('span');
+                label.textContent = chip.name;
+                var count = document.createElement('span');
+                count.className = 'fc-count';
+                count.textContent = (counts[chip.id] != null ? counts[chip.id] : 0);
+                btn.appendChild(img);
+                btn.appendChild(label);
+                btn.appendChild(count);
+                btn.onclick = function () { dcState.active = chip.id; renderFolderBar(); renderDataCenter(); };
+                bar.appendChild(btn);
+            });
+        }
+
+        function dcBuildCard(item) {
+            var links = (item && Array.isArray(item.links)) ? item.links : [];
+            var isCollection = links.length > 1;
+            var isJump = !!(item && item.redirectUrl);
+            if (!item || (!item.url && !item.redirectUrl && !isCollection)) return null;
+
+            var li = document.createElement('li');
+            li.className = 'file-card';
+
+            var icon = document.createElement('img');
+            icon.className = 'file-card-icon';
+            icon.src = dcIconSrc(item);
+            icon.alt = '';
+            icon.loading = 'lazy';
+
+            var main = document.createElement('div');
+            main.className = 'file-card-main';
+
+            var a = document.createElement('a');
+            a.className = 'file-card-name';
+            var label = item.name || item.key || item.file || item.url;
+            if (isCollection) {
+                a.href = 'javascript:void(0);';
+                a.onclick = (function (it) { return function () { openLinkDetail(it); }; })(item);
+            } else if (isJump) {
+                a.href = item.redirectUrl;
+                a.setAttribute('target', item.target || '_blank');
+                a.setAttribute('rel', 'noopener');
+            } else {
+                a.href = item.url;
+                if (item.download !== false) a.setAttribute('download', item.file || '');
+                if (item.target) a.setAttribute('target', item.target);
+            }
+            a.appendChild(document.createTextNode(label));
+
+            var badge = null;
+            if (isCollection) badge = { text: '列表', title: '包含多个链接，点击查看' };
+            else if (isJump) badge = { text: '跳转', title: '点击跳转到外部网站' };
+            if (badge) {
+                var mark = document.createElement('span');
+                mark.className = 'badge';
+                mark.textContent = badge.text;
+                mark.title = badge.title;
+                a.appendChild(mark);
+            }
+            main.appendChild(a);
+
+            var meta = [];
+            if (item.sizeText && !isJump && !isCollection) meta.push(item.sizeText);
+            if (item.desc) meta.push(item.desc);
+            if (meta.length) {
+                var desc = document.createElement('div');
+                desc.className = 'file-card-meta';
+                desc.textContent = meta.join(' · ');
+                main.appendChild(desc);
+            }
+
+            var arrow = document.createElement('span');
+            arrow.className = 'file-card-arrow';
+            arrow.textContent = isCollection ? '›' : (isJump ? '↗' : '↓');
+
+            li.appendChild(icon);
+            li.appendChild(main);
+            li.appendChild(arrow);
+            return li;
+        }
+
+        function renderDataCenter() {
+            var ul = document.getElementById('dataCenterDownloadList');
+            if (!ul) return;
+            ul.innerHTML = '';
+            var list = dcState.files.filter(function (item) {
+                return dcState.active === 'all' || dcCategoryOf(item) === dcState.active;
+            });
+            if (!list.length) {
+                var empty = document.createElement('li');
+                empty.className = 'dc-empty';
+                empty.textContent = dcState.files.length ? '此分类暂无文件。' : '暂无文件，请稍后再来。';
+                ul.appendChild(empty);
+                return;
+            }
+            list.forEach(function (item) {
+                var card = dcBuildCard(item);
+                if (card) ul.appendChild(card);
+            });
+        }
+
+        function loadDataCenter() {
+            function apply(files, folders) {
+                dcState.files = Array.isArray(files) ? files : [];
+                dcState.folders = Array.isArray(folders) ? folders : [];
+                if (dcState.active !== 'all' && dcState.active !== '' && !dcFolderName(dcState.active)) {
+                    dcState.active = 'all';
+                }
+                renderFolderBar();
+                renderDataCenter();
+            }
+            // 优先读取后台接口，其次 download/manifest.json，最后本地兜底
+            fetch('api/files')
+                .then(function (r) { if (!r.ok) throw new Error('api unavailable'); return r.json(); })
+                .then(function (data) {
+                    if (data && Array.isArray(data.files)) { apply(data.files, data.folders); return; }
+                    throw new Error('empty');
+                })
+                .catch(function () {
+                    return fetch('download/manifest.json')
+                        .then(function (r) { if (!r.ok) throw new Error('manifest not found'); return r.json(); })
+                        .then(function (data) {
+                            var list = Array.isArray(data) ? data : (data && data.files);
+                            if (Array.isArray(list)) apply(list, []);
+                            else throw new Error('empty');
+                        });
+                })
+                .catch(function () {
+                    if (window.downloadList && Array.isArray(window.downloadList)) apply(window.downloadList, []);
+                });
+        }
+
         function showDataCenter() {
             var mainContent = document.getElementById('mainContent');
             var dataCenterPage = document.getElementById('dataCenterPage');
@@ -744,90 +1064,8 @@
                 dataCenterPage.style.display = 'block';
                 // 每次进入都回到文件列表视图
                 resetLinkDetailView();
-                // 渲染下载列表
-                var ul = document.getElementById('dataCenterDownloadList');
-                if (ul) {
-                    var render = function(list) {
-                        ul.innerHTML = '';
-                        if (!list || !list.length) {
-                            var empty = document.createElement('li');
-                            empty.textContent = '暂无文件，请稍后再来。';
-                            empty.style = 'color:#666;';
-                            ul.appendChild(empty);
-                            return;
-                        }
-                        list.forEach(function(item) {
-                            var links = (item && Array.isArray(item.links)) ? item.links : [];
-                            var isCollection = links.length > 1;
-                            if (!item || (!item.url && !item.redirectUrl && !isCollection)) return;
-                            var li = document.createElement('li');
-                            li.style.margin = '18px 0';
-                            var a = document.createElement('a');
-                            var isJump = !!item.redirectUrl;
-                            // 统一下划线样式
-                            a.style = "color:#0097a7;text-decoration:underline;";
-                            var label = item.name || item.key || item.file || item.url;
-                            if (isCollection) {
-                                // txt 内含多个「名称:"网址"」-> 打开分页详情
-                                a.href = 'javascript:void(0);';
-                                a.onclick = (function(it) { return function() { openLinkDetail(it); }; })(item);
-                            } else if (isJump) {
-                                a.href = item.redirectUrl;
-                                a.setAttribute('target', item.target || '_blank');
-                                a.setAttribute('rel', 'noopener');
-                            } else {
-                                a.href = item.url;
-                                if (item.download !== false) a.setAttribute('download', item.file || '');
-                                if (item.target) a.setAttribute('target', item.target);
-                            }
-                            a.appendChild(document.createTextNode(label));
-                            // 小标志：列表 / 跳转（不影响下划线的整体观感）
-                            var badge = null;
-                            if (isCollection) {
-                                badge = { text: '列表', title: '包含多个链接，点击查看' };
-                            } else if (isJump) {
-                                badge = { text: '跳转', title: '点击跳转到外部网站' };
-                            }
-                            if (badge) {
-                                var mark = document.createElement('span');
-                                mark.textContent = badge.text;
-                                mark.title = badge.title;
-                                mark.style = "margin-left:6px;font-size:0.72em;color:#0097a7;border:1px solid #80deea;border-radius:3px;padding:0 5px;vertical-align:middle;text-decoration:none;";
-                                a.appendChild(mark);
-                            }
-                            li.appendChild(a);
-                            var meta = [];
-                            if (item.sizeText && !isJump && !isCollection) meta.push(item.sizeText);
-                            if (item.desc) meta.push(item.desc);
-                            if (meta.length) {
-                                var desc = document.createElement('div');
-                                desc.textContent = meta.join(' · ');
-                                desc.style = "color:#666;font-size:0.95em;margin-top:4px;";
-                                li.appendChild(desc);
-                            }
-                            ul.appendChild(li);
-                        });
-                    };
-                    // 优先读取后台接口，其次 download/manifest.json，最后本地兜底
-                    fetch('api/files')
-                        .then(function(r){ if (!r.ok) throw new Error('api unavailable'); return r.json(); })
-                        .then(function(data){
-                            if (data && Array.isArray(data.files)) { render(data.files); return; }
-                            throw new Error('empty');
-                        })
-                        .catch(function(){
-                            return fetch('download/manifest.json')
-                                .then(function(r){ if (!r.ok) throw new Error('manifest not found'); return r.json(); })
-                                .then(function(data){
-                                    var list = Array.isArray(data) ? data : (data && data.files);
-                                    if (Array.isArray(list)) render(list);
-                                    else throw new Error('empty');
-                                });
-                        })
-                        .catch(function(){
-                            if (window.downloadList && Array.isArray(window.downloadList)) render(window.downloadList);
-                        });
-                }
+                dcState.active = 'all';
+                loadDataCenter();
             }
         }
 
@@ -887,24 +1125,37 @@
             var start = linkState.page * LINK_PAGE_SIZE;
             items.slice(start, start + LINK_PAGE_SIZE).forEach(function(link) {
                 var li = document.createElement('li');
-                li.style.margin = '16px 0';
+                li.className = 'file-card';
+                var icon = document.createElement('img');
+                icon.className = 'file-card-icon';
+                icon.src = 'res/icons/link.svg';
+                icon.alt = '';
+                icon.loading = 'lazy';
+                var main = document.createElement('div');
+                main.className = 'file-card-main';
                 var a = document.createElement('a');
+                a.className = 'file-card-name';
                 a.href = link.url;
                 a.target = '_blank';
                 a.rel = 'noopener';
                 a.textContent = link.name || link.url;
-                a.style = 'color:#0097a7;text-decoration:underline;font-size:1.05em;';
-                li.appendChild(a);
+                main.appendChild(a);
                 if (link.desc) {
                     var d = document.createElement('div');
+                    d.className = 'file-card-meta';
                     d.textContent = link.desc;
-                    d.style = 'color:#666;font-size:0.95em;margin-top:4px;';
-                    li.appendChild(d);
+                    main.appendChild(d);
                 }
+                var arrow = document.createElement('span');
+                arrow.className = 'file-card-arrow';
+                arrow.textContent = '↗';
+                li.appendChild(icon);
+                li.appendChild(main);
+                li.appendChild(arrow);
                 list.appendChild(li);
             });
             if (totalPages > 1) {
-                var btnStyle = 'background:#00bcd4;color:#fff;border:none;border-radius:4px;padding:6px 14px;cursor:pointer;font-family:inherit;font-size:0.95em;';
+                var btnStyle = 'background:linear-gradient(135deg,#00bcd4,#0097a7);color:#fff;border:none;border-radius:999px;padding:7px 18px;cursor:pointer;font-family:inherit;font-size:0.92em;font-weight:600;box-shadow:0 6px 16px rgba(0,151,167,0.24);';
                 var prev = document.createElement('button');
                 prev.textContent = '上一页';
                 prev.style = btnStyle;
