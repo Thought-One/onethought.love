@@ -667,6 +667,89 @@
         }
         .modal-scroll::-webkit-scrollbar { width: 0; height: 0; display: none; }
 
+        /* ===== 网易云音乐解析 ===== */
+        .music-search { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+        .music-search input {
+            flex: 1 1 240px; min-width: 0;
+            padding: 12px 16px; border-radius: 999px;
+            border: 1px solid var(--border); background: rgba(255,255,255,0.9);
+            font-size: 1em; font-family: inherit; color: var(--text-main);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .music-search input:focus {
+            outline: none; border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(0,188,212,0.16);
+        }
+        .music-btn {
+            flex: 0 0 auto; padding: 12px 28px; border: none; border-radius: 999px;
+            background: linear-gradient(135deg, var(--accent), var(--brand));
+            color: #fff; font-size: 1em; font-weight: 600; font-family: inherit; cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0,151,167,0.26);
+            transition: transform 0.15s ease, box-shadow 0.2s ease;
+        }
+        .music-btn:hover { transform: translateY(-1px); box-shadow: 0 12px 26px rgba(0,151,167,0.32); }
+        .music-btn:active { transform: scale(0.97); }
+        .music-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .music-card {
+            display: flex; gap: 20px; flex-wrap: wrap;
+            padding: 20px; border-radius: var(--radius);
+            background: rgba(255,255,255,0.7); border: 1px solid var(--border);
+            box-shadow: var(--shadow); text-align: left;
+            animation: dcIn 0.5s cubic-bezier(0.22,1,0.36,1) both;
+        }
+        .music-cover {
+            width: 168px; height: 168px; border-radius: 12px; object-fit: cover;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15); flex-shrink: 0; background: #e0f7fa;
+        }
+        .music-info { flex: 1 1 260px; min-width: 0; }
+        .music-title { font-size: 1.3em; font-weight: 700; color: var(--text-main); margin: 0 0 6px; word-break: break-all; }
+        .music-sub { color: var(--muted); font-size: 0.92em; line-height: 1.7; word-break: break-all; }
+        .music-tags { margin: 10px 0 14px; display: flex; flex-wrap: wrap; gap: 6px; }
+        .music-tag {
+            font-size: 0.78em; color: var(--brand-strong);
+            background: rgba(0,188,212,0.1); border: 1px solid rgba(0,188,212,0.3);
+            border-radius: 999px; padding: 2px 10px;
+        }
+        .music-info audio { width: 100%; margin: 4px 0 12px; }
+        .music-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .music-actions a, .music-actions button {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 18px; border-radius: 999px; font-size: 0.9em; font-weight: 600;
+            font-family: inherit; cursor: pointer; text-decoration: none;
+            border: 1px solid var(--border); background: rgba(255,255,255,0.85); color: var(--brand-strong);
+            transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+        }
+        .music-actions a:hover, .music-actions button:hover { background: #fff; box-shadow: var(--shadow); transform: translateY(-1px); }
+        .music-actions .primary {
+            background: linear-gradient(135deg, var(--accent), var(--brand));
+            color: #fff; border-color: transparent; box-shadow: 0 8px 20px rgba(0,151,167,0.24);
+        }
+        .music-lyrics {
+            margin-top: 18px; padding: 16px 18px; border-radius: var(--radius-sm);
+            background: rgba(255,255,255,0.6); border: 1px solid var(--border);
+            max-height: 320px; overflow-y: auto;
+            scrollbar-width: none; -ms-overflow-style: none;
+            line-height: 2; font-size: 0.95em; color: var(--muted);
+            text-align: center;
+        }
+        .music-lyrics::-webkit-scrollbar { width: 0; height: 0; display: none; }
+        .music-lyrics .line { transition: color 0.2s ease, transform 0.2s ease; }
+        .music-lyrics .line.active { color: var(--brand); font-weight: 700; transform: scale(1.03); }
+
+        .music-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+        .music-item {
+            display: flex; align-items: center; gap: 12px; padding: 8px 12px;
+            border-radius: var(--radius-sm); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.62); cursor: pointer; text-align: left;
+            transition: transform 0.18s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+        .music-item:hover { transform: translateX(3px); background: #fff; box-shadow: var(--shadow); }
+        .music-item img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; flex-shrink: 0; background: #e0f7fa; }
+        .music-item .mi-main { min-width: 0; }
+        .music-item .mi-name { font-weight: 600; color: var(--text-main); word-break: break-all; }
+        .music-item .mi-sub { color: var(--muted); font-size: 0.85em; margin-top: 2px; word-break: break-all; }
+
         .notice-card {
             background: var(--card);
             -webkit-backdrop-filter: blur(12px) saturate(1.15);
@@ -698,6 +781,8 @@
             main { padding: 20px 3vw 160px; }
             .df-grid { grid-template-columns: 1fr; }
             .df-pass { font-size: 1.6em; }
+            .music-cover { width: 120px; height: 120px; }
+            .music-lyrics { max-height: 240px; }
         }
     </style>
     <div class="head-flex">
@@ -721,6 +806,7 @@
         <a href="javascript:void(0);" onclick="showMainContent(true)">首页</a>
         <a href="javascript:void(0);" onclick="showDataCenter(true)">数据中心</a>
         <a href="javascript:void(0);" onclick="showDeltaPage(true)">三角洲每日密码</a>
+        <a href="javascript:void(0);" onclick="showMusicPage(true)">音乐解析</a>
     </div>
     <!-- 全局静态背景（纯 CSS 渐变，无额外请求，加载更快） -->
     <div id="globalBg" aria-hidden="true"></div>
@@ -774,6 +860,23 @@
                     <button class="df-refresh" onclick="loadDeltaSecrets(true)">刷新密码</button>
                     <span id="dfUpdated" class="df-updated"></span>
                 </div>
+            </div>
+        </div>
+        <!-- 网易云音乐解析 -->
+        <div id="musicPage" class="main-content" style="display:none;">
+            <div class="dc-shell music-shell">
+                <button class="back-btn" onclick="showMainContent(true)">&#8592; 返回首页</button>
+                <div class="dc-head">
+                    <h2>音乐解析</h2>
+                    <p class="dc-sub">粘贴网易云歌曲链接 / 歌曲 ID，或直接输入歌名搜索</p>
+                </div>
+                <div class="music-search">
+                    <input id="musicInput" type="text" autocomplete="off"
+                        placeholder="例如：https://music.163.com/song?id=1901371647 或 孤勇者">
+                    <button class="music-btn" id="musicParseBtn" onclick="parseMusic()">解析</button>
+                </div>
+                <div id="musicStatus" class="df-status"></div>
+                <div id="musicResult" class="music-result"></div>
             </div>
         </div>
     </main>
@@ -987,6 +1090,7 @@
             var mainContent = document.getElementById('mainContent');
             var dataCenterPage = document.getElementById('dataCenterPage');
             var deltaPage = document.getElementById('deltaPage');
+            var musicPage = document.getElementById('musicPage');
             if (dataCenterPage) {
                 dataCenterPage.classList.remove('show');
                 dataCenterPage.style.display = 'none';
@@ -994,6 +1098,10 @@
             if (deltaPage) {
                 deltaPage.classList.remove('show');
                 deltaPage.style.display = 'none';
+            }
+            if (musicPage) {
+                musicPage.classList.remove('show');
+                musicPage.style.display = 'none';
             }
             if (mainContent) {
                 mainContent.classList.add('show');
@@ -1192,6 +1300,7 @@
             var mainContent = document.getElementById('mainContent');
             var dataCenterPage = document.getElementById('dataCenterPage');
             var deltaPage = document.getElementById('deltaPage');
+            var musicPage = document.getElementById('musicPage');
             if (mainContent) {
                 mainContent.classList.remove('show');
                 mainContent.style.display = 'none';
@@ -1199,6 +1308,10 @@
             if (deltaPage) {
                 deltaPage.classList.remove('show');
                 deltaPage.style.display = 'none';
+            }
+            if (musicPage) {
+                musicPage.classList.remove('show');
+                musicPage.style.display = 'none';
             }
             if (dataCenterPage) {
                 dataCenterPage.classList.add('show');
@@ -1370,7 +1483,7 @@
         }
 
         function showDeltaPage() {
-            ['mainContent', 'dataCenterPage'].forEach(function (id) {
+            ['mainContent', 'dataCenterPage', 'musicPage'].forEach(function (id) {
                 var el = document.getElementById(id);
                 if (el) { el.classList.remove('show'); el.style.display = 'none'; }
             });
@@ -1380,6 +1493,261 @@
                 page.style.display = 'block';
             }
             loadDeltaSecrets(false);
+        }
+
+        // ===== 网易云音乐解析 =====
+        var musicLines = [];
+        var musicAudio = null;
+
+        function setMusicStatus(text, isError) {
+            var el = document.getElementById('musicStatus');
+            if (!el) return;
+            el.className = 'df-status' + (isError ? ' warn' : '');
+            el.textContent = text || '';
+        }
+
+        function setMusicBusy(busy) {
+            var btn = document.getElementById('musicParseBtn');
+            if (btn) btn.disabled = busy;
+        }
+
+        function showMusicPage() {
+            ['mainContent', 'dataCenterPage', 'deltaPage'].forEach(function (id) {
+                var el = document.getElementById(id);
+                if (el) { el.classList.remove('show'); el.style.display = 'none'; }
+            });
+            var page = document.getElementById('musicPage');
+            if (page) {
+                page.classList.add('show');
+                page.style.display = 'block';
+            }
+            var input = document.getElementById('musicInput');
+            if (input) setTimeout(function () { input.focus(); }, 60);
+        }
+
+        function parseMusic() {
+            var input = document.getElementById('musicInput');
+            var value = (input && input.value || '').trim();
+            if (!value) { setMusicStatus('请输入歌曲链接、ID 或歌名', true); return; }
+            if (/music\.163\.com/i.test(value) || /^\d{4,}$/.test(value)) {
+                loadSong(value);
+            } else {
+                searchMusic(value);
+            }
+        }
+
+        function musicRequest(query) {
+            return fetch('api/wyy?' + query, { cache: 'no-store' }).then(function (r) {
+                return r.json().then(function (d) { return { ok: r.ok, data: d }; });
+            });
+        }
+
+        function loadSong(urlOrId) {
+            setMusicBusy(true);
+            setMusicStatus('解析中…', false);
+            musicRequest('action=song&url=' + encodeURIComponent(urlOrId))
+                .then(function (res) {
+                    var d = res.data || {};
+                    if (!d.data) throw new Error(d.message || '解析失败');
+                    renderSong(d.data);
+                    setMusicStatus('解析成功', false);
+                })
+                .catch(function (err) { setMusicStatus(err.message, true); })
+                .finally(function () { setMusicBusy(false); });
+        }
+
+        function searchMusic(keyword) {
+            setMusicBusy(true);
+            setMusicStatus('搜索中…', false);
+            musicRequest('action=search&keyword=' + encodeURIComponent(keyword))
+                .then(function (res) {
+                    var list = (res.data && res.data.data) || [];
+                    if (!Array.isArray(list) || !list.length) throw new Error('没有找到相关歌曲');
+                    renderSearchList(list);
+                    setMusicStatus('共 ' + list.length + ' 条结果，点击选择', false);
+                })
+                .catch(function (err) { setMusicStatus(err.message, true); })
+                .finally(function () { setMusicBusy(false); });
+        }
+
+        function renderSearchList(list) {
+            var box = document.getElementById('musicResult');
+            if (!box) return;
+            box.innerHTML = '';
+            var ul = document.createElement('ul');
+            ul.className = 'music-list';
+            list.forEach(function (item) {
+                var li = document.createElement('li');
+                li.className = 'music-item';
+
+                var img = document.createElement('img');
+                img.loading = 'lazy';
+                img.referrerPolicy = 'no-referrer';
+                img.src = item.picUrl || '';
+                img.alt = '';
+
+                var main = document.createElement('div');
+                main.className = 'mi-main';
+                var name = document.createElement('div');
+                name.className = 'mi-name';
+                name.textContent = item.name || '未知歌曲';
+                var sub = document.createElement('div');
+                sub.className = 'mi-sub';
+                sub.textContent = [(item.artist_string || item.artists || ''), item.album || ''].filter(Boolean).join(' · ');
+                main.appendChild(name);
+                main.appendChild(sub);
+
+                li.appendChild(img);
+                li.appendChild(main);
+                li.onclick = function () {
+                    var input = document.getElementById('musicInput');
+                    if (input) input.value = 'https://music.163.com/song?id=' + item.id;
+                    loadSong('https://music.163.com/song?id=' + item.id);
+                };
+                ul.appendChild(li);
+            });
+            box.appendChild(ul);
+        }
+
+        function parseLrc(text) {
+            var out = [];
+            var re = /\[(\d{1,2}):(\d{1,2})(?:[.:](\d{1,3}))?\]/g;
+            String(text || '').split(/\r?\n/).forEach(function (line) {
+                re.lastIndex = 0;
+                var stamps = [];
+                var m;
+                while ((m = re.exec(line))) {
+                    var frac = m[3] ? parseInt((m[3] + '00').slice(0, 3), 10) : 0;
+                    stamps.push(parseInt(m[1], 10) * 60 + parseInt(m[2], 10) + frac / 1000);
+                }
+                var content = line.replace(/\[[^\]]*\]/g, '').trim();
+                if (!stamps.length) { if (content) out.push({ t: null, text: content }); return; }
+                stamps.forEach(function (t) { out.push({ t: t, text: content }); });
+            });
+            out.sort(function (a, b) { return (a.t === null ? -1 : a.t) - (b.t === null ? -1 : b.t); });
+            return out;
+        }
+
+        function renderSong(data) {
+            var box = document.getElementById('musicResult');
+            if (!box) return;
+            box.innerHTML = '';
+
+            var card = document.createElement('div');
+            card.className = 'music-card';
+
+            var cover = document.createElement('img');
+            cover.className = 'music-cover';
+            cover.referrerPolicy = 'no-referrer';
+            cover.alt = '';
+            cover.src = data.pic || '';
+
+            var info = document.createElement('div');
+            info.className = 'music-info';
+
+            var title = document.createElement('h3');
+            title.className = 'music-title';
+            title.textContent = data.name || '未知歌曲';
+            info.appendChild(title);
+
+            var sub = document.createElement('div');
+            sub.className = 'music-sub';
+            sub.textContent = [data.ar_name || '', data.al_name || ''].filter(Boolean).join(' · ');
+            info.appendChild(sub);
+
+            var tags = document.createElement('div');
+            tags.className = 'music-tags';
+            [data.level, data.size].forEach(function (v) {
+                if (!v) return;
+                var tag = document.createElement('span');
+                tag.className = 'music-tag';
+                tag.textContent = v;
+                tags.appendChild(tag);
+            });
+            info.appendChild(tags);
+
+            if (data.url) {
+                var audio = document.createElement('audio');
+                audio.controls = true;
+                audio.preload = 'none';
+                audio.src = data.url;
+                info.appendChild(audio);
+                musicAudio = audio;
+
+                var actions = document.createElement('div');
+                actions.className = 'music-actions';
+
+                var dl = document.createElement('a');
+                dl.className = 'primary';
+                dl.href = data.url;
+                dl.setAttribute('download', (data.name || 'song') + '.mp3');
+                dl.setAttribute('target', '_blank');
+                dl.setAttribute('rel', 'noopener');
+                dl.textContent = '下载 / 播放';
+                actions.appendChild(dl);
+
+                var copy = document.createElement('button');
+                copy.type = 'button';
+                copy.textContent = '复制直链';
+                copy.onclick = function () {
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(data.url).then(function () {
+                            copy.textContent = '已复制';
+                            setTimeout(function () { copy.textContent = '复制直链'; }, 1500);
+                        }).catch(function () { window.prompt('歌曲直链：', data.url); });
+                    } else {
+                        window.prompt('歌曲直链：', data.url);
+                    }
+                };
+                actions.appendChild(copy);
+                info.appendChild(actions);
+            } else {
+                var noUrl = document.createElement('div');
+                noUrl.className = 'music-sub';
+                noUrl.textContent = '（未获取到播放直链，可能受版权限制）';
+                info.appendChild(noUrl);
+            }
+
+            card.appendChild(cover);
+            card.appendChild(info);
+            box.appendChild(card);
+
+            // 歌词
+            musicLines = parseLrc(data.lyric);
+            if (musicLines.length) {
+                var lyrics = document.createElement('div');
+                lyrics.className = 'music-lyrics';
+                musicLines.forEach(function (line, i) {
+                    var el = document.createElement('div');
+                    el.className = 'line';
+                    el.dataset.index = i;
+                    el.textContent = line.text || '♪';
+                    lyrics.appendChild(el);
+                });
+                box.appendChild(lyrics);
+                bindLyrics(lyrics);
+            }
+        }
+
+        function bindLyrics(lyricsEl) {
+            if (!musicAudio) return;
+            var lines = lyricsEl.querySelectorAll('.line');
+            musicAudio.ontimeupdate = function () {
+                var t = musicAudio.currentTime;
+                var idx = -1;
+                for (var i = 0; i < musicLines.length; i += 1) {
+                    if (musicLines[i].t !== null && musicLines[i].t <= t) idx = i;
+                }
+                if (idx < 0) return;
+                if (lyricsEl._active === idx) return;
+                lyricsEl._active = idx;
+                for (var j = 0; j < lines.length; j += 1) lines[j].classList.remove('active');
+                var active = lyricsEl.querySelector('.line[data-index="' + idx + '"]');
+                if (active) {
+                    active.classList.add('active');
+                    lyricsEl.scrollTop = active.offsetTop - lyricsEl.clientHeight / 2;
+                }
+            };
         }
 
         // ===== txt 链接列表：分页详情 =====

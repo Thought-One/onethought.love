@@ -5,6 +5,7 @@ import { onRequestGet as filesGet, onRequestPost as filesPost, onRequestPatch as
 import { onRequestGet as foldersGet, onRequestPost as foldersPost, onRequestPatch as foldersPatch, onRequestDelete as foldersDelete } from './lib/folders.js';
 import { onRequestGet as noticeGet, onRequestPut as noticePut } from './lib/notice.js';
 import { onRequestGet as deltaGet } from './lib/delta.js';
+import { onRequestGet as musicGet } from './lib/music.js';
 import { serveDownload } from './lib/download.js';
 
 const ROUTES = {
@@ -22,6 +23,7 @@ const ROUTES = {
   'GET /api/notice': noticeGet,
   'PUT /api/notice': noticePut,
   'GET /api/df-secret': deltaGet,
+  'GET /api/wyy': musicGet,
 };
 
 export default {
