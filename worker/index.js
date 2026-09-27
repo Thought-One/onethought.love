@@ -4,6 +4,7 @@ import { onRequestGet as session } from './lib/session.js';
 import { onRequestGet as filesGet, onRequestPost as filesPost, onRequestPatch as filesPatch, onRequestDelete as filesDelete } from './lib/files.js';
 import { onRequestGet as foldersGet, onRequestPost as foldersPost, onRequestPatch as foldersPatch, onRequestDelete as foldersDelete } from './lib/folders.js';
 import { onRequestGet as noticeGet, onRequestPut as noticePut } from './lib/notice.js';
+import { onRequestGet as deltaGet } from './lib/delta.js';
 import { serveDownload } from './lib/download.js';
 
 const ROUTES = {
@@ -20,6 +21,7 @@ const ROUTES = {
   'DELETE /api/folders': foldersDelete,
   'GET /api/notice': noticeGet,
   'PUT /api/notice': noticePut,
+  'GET /api/df-secret': deltaGet,
 };
 
 export default {

@@ -583,6 +583,69 @@
         }
         .footer-links a:hover { color: #00838f; }
 
+        /* 三角洲每日密码 */
+        .df-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+        .df-card {
+            position: relative;
+            min-height: 180px;
+            border-radius: 14px;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+            background-color: #043b42;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: flex-end;
+            transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease;
+            animation: dcIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        .df-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+        .df-card::after {
+            content: "";
+            position: absolute; inset: 0;
+            background: linear-gradient(180deg, rgba(4,28,32,0.06) 32%, rgba(4,28,32,0.84) 100%);
+        }
+        .df-card-body { position: relative; z-index: 1; width: 100%; padding: 16px 18px; }
+        .df-card-name {
+            color: #fff; font-size: 1.16em; font-weight: 700;
+            letter-spacing: 1px; text-shadow: 0 2px 10px rgba(0,0,0,0.55);
+        }
+        .df-card-secret { margin-top: 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .df-pass {
+            font-family: "Consolas", "SFMono-Regular", ui-monospace, monospace;
+            font-size: 1.9em; font-weight: 700; letter-spacing: 5px;
+            color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,0.65);
+        }
+        .df-pass.pending { font-size: 0.98em; letter-spacing: 0; color: rgba(255,255,255,0.82); font-weight: 500; }
+        .df-copy {
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.42);
+            border-radius: 999px;
+            padding: 5px 14px;
+            font-size: 0.85em;
+            font-family: inherit;
+            cursor: pointer;
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+            transition: background 0.2s ease;
+        }
+        .df-copy:hover { background: rgba(255,255,255,0.4); }
+        .df-status { font-size: 0.9em; color: var(--muted); margin: -6px 0 14px; }
+        .df-status.warn { color: #b26a00; }
+        .df-foot { display: flex; align-items: center; gap: 14px; margin-top: 18px; flex-wrap: wrap; }
+        .df-refresh {
+            background: linear-gradient(135deg, var(--accent), var(--brand));
+            color: #fff; border: none; border-radius: 999px;
+            padding: 9px 22px; font-size: 0.95em; font-weight: 600; font-family: inherit;
+            cursor: pointer; box-shadow: 0 8px 20px rgba(0,151,167,0.26);
+            transition: transform 0.15s ease, box-shadow 0.2s ease;
+        }
+        .df-refresh:hover { transform: translateY(-1px); box-shadow: 0 12px 26px rgba(0,151,167,0.32); }
+        .df-refresh:active { transform: scale(0.97); }
+        .df-updated { color: var(--muted); font-size: 0.85em; }
+
         .notice-card {
             background: var(--card);
             -webkit-backdrop-filter: blur(12px) saturate(1.15);
@@ -612,6 +675,8 @@
             .footer-links { gap: 18px; }
             .footer-links a { font-size: 0.82em; }
             main { bottom: 144px; }
+            .df-grid { grid-template-columns: 1fr; }
+            .df-pass { font-size: 1.6em; }
         }
     </style>
     <div class="head-flex">
@@ -634,6 +699,7 @@
         </div>
         <a href="javascript:void(0);" onclick="showMainContent(true)">首页</a>
         <a href="javascript:void(0);" onclick="showDataCenter(true)">数据中心</a>
+        <a href="javascript:void(0);" onclick="showDeltaPage(true)">三角洲每日密码</a>
     </div>
     <!-- 全局静态背景（纯 CSS 渐变，无额外请求，加载更快） -->
     <div id="globalBg" aria-hidden="true"></div>
@@ -670,6 +736,22 @@
                     <div class="dc-head"><h2 id="linkDetailTitle">链接列表</h2></div>
                     <ul id="linkDetailList" class="file-card-list"></ul>
                     <div id="linkPager" style="display:flex;justify-content:center;align-items:center;gap:14px;margin-top:22px;"></div>
+                </div>
+            </div>
+        </div>
+        <!-- 三角洲每日密码 -->
+        <div id="deltaPage" class="main-content" style="display:none;">
+            <div class="dc-shell">
+                <button class="back-btn" onclick="showMainContent(true)">&#8592; 返回首页</button>
+                <div class="dc-head">
+                    <h2>三角洲每日密码</h2>
+                    <p class="dc-sub">三角洲行动 · 每张地图的今日密码，背景即对应地图</p>
+                </div>
+                <div id="dfStatus" class="df-status"></div>
+                <div id="dfGrid" class="df-grid"></div>
+                <div class="df-foot">
+                    <button class="df-refresh" onclick="loadDeltaSecrets(true)">刷新密码</button>
+                    <span id="dfUpdated" class="df-updated"></span>
                 </div>
             </div>
         </div>
@@ -883,9 +965,14 @@
             loadHitokoto(); // 每次进入主页都更换一言
             var mainContent = document.getElementById('mainContent');
             var dataCenterPage = document.getElementById('dataCenterPage');
+            var deltaPage = document.getElementById('deltaPage');
             if (dataCenterPage) {
                 dataCenterPage.classList.remove('show');
                 dataCenterPage.style.display = 'none';
+            }
+            if (deltaPage) {
+                deltaPage.classList.remove('show');
+                deltaPage.style.display = 'none';
             }
             if (mainContent) {
                 mainContent.classList.add('show');
@@ -1083,9 +1170,14 @@
         function showDataCenter() {
             var mainContent = document.getElementById('mainContent');
             var dataCenterPage = document.getElementById('dataCenterPage');
+            var deltaPage = document.getElementById('deltaPage');
             if (mainContent) {
                 mainContent.classList.remove('show');
                 mainContent.style.display = 'none';
+            }
+            if (deltaPage) {
+                deltaPage.classList.remove('show');
+                deltaPage.style.display = 'none';
             }
             if (dataCenterPage) {
                 dataCenterPage.classList.add('show');
@@ -1095,6 +1187,151 @@
                 dcState.active = 'all';
                 loadDataCenter();
             }
+        }
+
+        // ===== 三角洲每日密码 =====
+        var DF_MAP_FILES = {
+            '零号大坝': '1.jpg',
+            '长弓溪谷': '2.jpg',
+            '巴克什': '3.jpg',
+            '航天基地': '4.jpg',
+            '潮汐监狱': '5.jpg'
+        };
+        var DF_ID_FILES = { 1: '1.jpg', 2: '2.jpg', 3: '3.jpg', 4: '4.jpg', 5: '5.jpg' };
+
+        function dfBackground(map) {
+            var file = DF_MAP_FILES[map.mapName] || DF_ID_FILES[map.mapID] || '';
+            return file ? 'res/maps/' + file : '';
+        }
+        function dfFallbackGradient(name) {
+            var palettes = ['#0e6b74,#043b42', '#6b4a12,#2b1c05', '#4a2b6b,#1e0f33', '#0d4a6b,#052331', '#6b2b2b,#33110f'];
+            var sum = 0;
+            for (var i = 0; i < name.length; i += 1) sum += name.charCodeAt(i);
+            return palettes[sum % palettes.length];
+        }
+
+        function renderDelta(data) {
+            var grid = document.getElementById('dfGrid');
+            var status = document.getElementById('dfStatus');
+            var updated = document.getElementById('dfUpdated');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            var maps = (data && data.maps) || [];
+            if (data && data.configured === false) {
+                if (status) {
+                    status.className = 'df-status warn';
+                    status.textContent = '后端尚未配置登录 Cookie（环境变量 DF_COOKIE），暂时无法获取实时密码。';
+                }
+            } else if (status) {
+                status.className = 'df-status';
+                status.textContent = '';
+            }
+            if (updated) {
+                updated.textContent = data && data.updatedAt
+                    ? ('更新于 ' + new Date(data.updatedAt).toLocaleString('zh-CN'))
+                    : '';
+            }
+
+            if (!maps.length) {
+                var empty = document.createElement('div');
+                empty.className = 'dc-empty';
+                empty.textContent = '暂时无法获取密码，请稍后再试。';
+                grid.appendChild(empty);
+                return;
+            }
+
+            maps.forEach(function (map, idx) {
+                var card = document.createElement('div');
+                card.className = 'df-card';
+                card.style.animationDelay = (idx * 60) + 'ms';
+                var bg = dfBackground(map);
+                if (bg) card.style.backgroundImage = "url('" + bg + "')";
+                else card.style.background = 'linear-gradient(135deg,' + dfFallbackGradient(map.mapName || '') + ')';
+
+                var body = document.createElement('div');
+                body.className = 'df-card-body';
+
+                var name = document.createElement('div');
+                name.className = 'df-card-name';
+                name.textContent = map.mapName || ('地图 ' + map.mapID);
+
+                var row = document.createElement('div');
+                row.className = 'df-card-secret';
+
+                var pass = document.createElement('span');
+                pass.className = 'df-pass';
+                if (map.secret) pass.textContent = map.secret;
+                else { pass.classList.add('pending'); pass.textContent = '密码获取失败'; }
+
+                row.appendChild(pass);
+                if (map.secret) {
+                    var copy = document.createElement('button');
+                    copy.className = 'df-copy';
+                    copy.textContent = '复制密码';
+                    copy.onclick = (function (secret, mapName) {
+                        return function () {
+                            var done = function () {
+                                copy.textContent = '已复制';
+                                setTimeout(function () { copy.textContent = '复制密码'; }, 1500);
+                            };
+                            if (navigator.clipboard) {
+                                navigator.clipboard.writeText(secret).then(done).catch(function () {
+                                    window.prompt(mapName + ' 密码：', secret);
+                                });
+                            } else {
+                                window.prompt(mapName + ' 密码：', secret);
+                            }
+                        };
+                    })(map.secret, map.mapName);
+                    row.appendChild(copy);
+                }
+
+                body.appendChild(name);
+                body.appendChild(row);
+                card.appendChild(body);
+                grid.appendChild(card);
+            });
+        }
+
+        function loadDeltaSecrets(force) {
+            var grid = document.getElementById('dfGrid');
+            var status = document.getElementById('dfStatus');
+            if (grid && !grid.children.length) {
+                var loading = document.createElement('div');
+                loading.className = 'dc-empty';
+                loading.textContent = '正在获取今日密码…';
+                grid.appendChild(loading);
+            }
+            fetch('api/df-secret' + (force ? '?_=' + Date.now() : ''), { cache: 'no-store' })
+                .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+                .then(function (res) {
+                    if (res.ok && res.data) { renderDelta(res.data); return; }
+                    throw new Error((res.data && res.data.error) || '获取失败');
+                })
+                .catch(function (err) {
+                    if (grid) {
+                        grid.innerHTML = '';
+                        var e = document.createElement('div');
+                        e.className = 'dc-empty';
+                        e.textContent = err.message;
+                        grid.appendChild(e);
+                    }
+                    if (status) { status.className = 'df-status warn'; status.textContent = ''; }
+                });
+        }
+
+        function showDeltaPage() {
+            ['mainContent', 'dataCenterPage'].forEach(function (id) {
+                var el = document.getElementById(id);
+                if (el) { el.classList.remove('show'); el.style.display = 'none'; }
+            });
+            var page = document.getElementById('deltaPage');
+            if (page) {
+                page.classList.add('show');
+                page.style.display = 'block';
+            }
+            loadDeltaSecrets(false);
         }
 
         // ===== txt 链接列表：分页详情 =====
