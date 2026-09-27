@@ -1464,20 +1464,27 @@
                 loading.textContent = '正在获取今日密码…';
                 grid.appendChild(loading);
             }
-            fetch('api/df-secret' + (force ? '?_=' + Date.now() : ''), { cache: 'no-store' })
+            fetch('api/df-secret?_=' + Date.now(), { cache: 'no-store' })
                 .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
                 .then(function (res) {
                     if (res.ok && res.data) { renderDelta(res.data); return; }
                     throw new Error((res.data && res.data.error) || '获取失败');
                 })
                 .catch(function (err) {
-                    if (grid) {
-                        grid.innerHTML = '';
-                        var e = document.createElement('div');
-                        e.className = 'dc-empty';
-                        e.textContent = err.message;
-                        grid.appendChild(e);
-                    }
+                    if (!grid) return;
+                    grid.innerHTML = '';
+                    var wrap = document.createElement('div');
+                    wrap.className = 'dc-empty';
+                    var msg = document.createElement('div');
+                    msg.textContent = err.message || '获取失败';
+                    var retry = document.createElement('button');
+                    retry.className = 'df-refresh';
+                    retry.style.marginTop = '12px';
+                    retry.textContent = '重试';
+                    retry.onclick = function () { loadDeltaSecrets(true); };
+                    wrap.appendChild(msg);
+                    wrap.appendChild(retry);
+                    grid.appendChild(wrap);
                     if (status) { status.className = 'df-status warn'; status.textContent = ''; }
                 });
         }
