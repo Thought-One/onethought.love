@@ -1,18 +1,17 @@
 // 三角洲行动 · 每日密码。
-// 数据来源：https://api.s0o1.com/API/sjz/mm（公开文本接口，无需登录 Cookie）。
-// 返回纯文本，形如：
-//   三角洲行动每日密码（更新时间：2026-09-27 14:37:33）
-//   1. 潮汐监狱
-//   具体点位：监狱行政区1楼大厅楼梯拐角处
-//   每日密码：5530
-//   地点图片：https://ug.tapimg.com/deltaforce/daily_password/cxjy.jpg
+// 主源：https://api.s0o1.com/API/sjz/mm
+// 备源：https://openapi.dwo.cc/api/sjzmm
+// 两者均为公开文本接口，格式略有不同，这里统一解析；上游偶发 522/超时时重试，
+// 并在全部失败时用 Cache API 保存的「最近一次成功结果」兜底。
 //
-// 可选环境变量：DF_SECRET_URL 覆盖数据来源地址。
-// 上游偶发 522/超时：这里做重试，并把最近一次成功结果用 Cache API 兜底。
+// 可选环境变量：DF_SECRET_URL 覆盖为主源地址。
 
 import { json, error } from './http.js';
 
-const SOURCE_URL = 'https://api.s0o1.com/API/sjz/mm';
+const SOURCES = [
+  'https://api.s0o1.com/API/sjz/mm',
+  'https://openapi.dwo.cc/api/sjzmm',
+];
 const LAST_GOOD_URL = 'https://onethought.internal/df-secret-lastgood';
 
 // 上游可能返回 UTF-8 或 GBK，这里做兼容解码
@@ -41,22 +40,29 @@ function parse(text) {
   let current = null;
   let updatedText = '';
 
-  const tsMatch = source.match(/更新时间\s*[:：]\s*([^（）()\n]+)/);
-  if (tsMatch) updatedText = tsMatch[1].trim();
+  let ts = source.match(/更新时间\s*[:：]\s*([^（）()\n]+)/) || source.match(/更新日期\s*[:：]\s*([^\n]+)/);
+  if (ts) updatedText = ts[1].trim();
 
   const takeUrl = (value) => {
     const url = (String(value || '').match(/https?:\/\/[^\s"'<>]+/) || [])[0];
     return url ? url.replace(/[，。；、,;]+$/, '') : '';
   };
+  const newMap = (name) => ({ mapID: maps.length + 1, mapName: name, secret: '', desc: '', images: [] });
 
   for (const raw of lines) {
     const line = raw.trim();
     if (!line) continue;
     let match;
 
-    // 地图条目：以「1. 潮汐监狱」「1、潮汐监狱」等开头
+    // 格式A（s0o1）：以「1. 潮汐监狱」开头
     if ((match = line.match(/^\d+\s*[.、．]\s*(.+)$/))) {
-      current = { mapID: maps.length + 1, mapName: match[1].trim(), secret: '', desc: '', images: [] };
+      current = newMap(match[1].trim());
+      maps.push(current);
+      continue;
+    }
+    // 格式B（dwo）：「地图名称: 潮汐监狱」
+    if ((match = line.match(/^地图名称\s*[:：]\s*(.+)$/))) {
+      current = newMap(match[1].trim());
       maps.push(current);
       continue;
     }
@@ -75,7 +81,6 @@ function parse(text) {
       if (url) current.images.push(url);
       continue;
     }
-
     const url = takeUrl(line);
     if (url) current.images.push(url);
   }
@@ -87,7 +92,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // 带重试的请求：5xx / 网络错误重试，4xx 直接返回
 async function requestUpstream(url) {
-  const attempts = 3;
+  const attempts = 2;
   let lastError;
   for (let i = 0; i < attempts; i += 1) {
     try {
@@ -100,7 +105,7 @@ async function requestUpstream(url) {
     } catch (err) {
       lastError = err;
     }
-    if (i < attempts - 1) await sleep(500);
+    if (i < attempts - 1) await sleep(400);
   }
   throw lastError || new Error('upstream failed');
 }
@@ -135,28 +140,30 @@ async function writeLastGood(payload) {
 }
 
 export async function onRequestGet({ env }) {
-  const url = env && String(env.DF_SECRET_URL || '').trim()
-    ? String(env.DF_SECRET_URL).trim()
-    : SOURCE_URL;
+  const custom = env && String(env.DF_SECRET_URL || '').trim();
+  const sources = custom ? [custom, ...SOURCES] : SOURCES;
 
   let text = '';
-  try {
-    const res = await requestUpstream(url);
-    if (!res.ok) return error(`每日密码接口返回异常 (${res.status})`, 502);
-    text = await readText(res);
-  } catch (err) {
-    text = '';
+  let source = '';
+  for (const url of sources) {
+    try {
+      const res = await requestUpstream(url);
+      if (!res.ok) continue;
+      const body = await readText(res);
+      if (parse(body).maps.length) { text = body; source = url; break; }
+    } catch (err) {
+      // 尝试下一个源
+    }
   }
 
   if (text) {
     const { updatedText, maps } = parse(text);
-    if (!maps.length) return error('暂未获取到密码数据，请稍后重试', 502);
     const payload = { updatedAt: new Date().toISOString(), updatedText, maps };
     await writeLastGood(payload);
-    return json({ configured: true, source: 's0o1', ...payload });
+    return json({ configured: true, source: source.indexOf('dwo') >= 0 ? 'dwo' : 's0o1', ...payload });
   }
 
-  // 上游失败：用最近一次成功结果兜底
+  // 全部上游失败：用最近一次成功结果兜底
   const cached = await readLastGood();
   if (cached) {
     return json({ configured: true, source: 'cache', stale: true, ...cached });
