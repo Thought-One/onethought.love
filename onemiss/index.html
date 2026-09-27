@@ -206,11 +206,67 @@
   .file-item .fi-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
   .file-item select { width: auto; min-width: 116px; padding: 6px 10px; font-size: 0.85em; }
 
+  /* ===== 模块化布局 ===== */
+  .admin-layout { display: grid; grid-template-columns: 214px 1fr; gap: 20px; align-items: start; }
+  .admin-side {
+    position: sticky; top: 20px;
+    display: flex; flex-direction: column; gap: 14px;
+    background: var(--card);
+    -webkit-backdrop-filter: blur(14px) saturate(1.15);
+    backdrop-filter: blur(14px) saturate(1.15);
+    border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 14px;
+  }
+  .admin-brand { font-weight: 800; color: var(--brand-strong); letter-spacing: .5px; padding: 4px 8px 2px; }
+  .admin-nav { display: flex; flex-direction: column; gap: 6px; }
+  .admin-nav button {
+    text-align: left; width: 100%;
+    background: transparent; color: var(--brand-strong);
+    border: 1px solid transparent; box-shadow: none; border-radius: 12px;
+    padding: 10px 14px; font-weight: 600; font-size: 0.95em;
+  }
+  .admin-nav button:hover { background: rgba(0,151,167,0.08); transform: none; box-shadow: none; }
+  .admin-nav button.active {
+    background: linear-gradient(135deg, var(--accent), var(--brand));
+    color: #fff; box-shadow: 0 8px 20px rgba(0,151,167,0.24);
+  }
+  .admin-main { min-width: 0; }
+  .module {
+    background: var(--card);
+    -webkit-backdrop-filter: blur(14px) saturate(1.15);
+    backdrop-filter: blur(14px) saturate(1.15);
+    border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 22px;
+    animation: cardIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .module h2 {
+    margin: 0 0 16px; font-size: 1.15em; color: var(--brand-strong);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .module h2::before {
+    content: ""; width: 4px; height: 16px; border-radius: 3px;
+    background: linear-gradient(180deg, var(--accent), var(--brand));
+  }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; }
+  .stat {
+    background: rgba(255,255,255,0.6); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 18px; text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .stat:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+  .stat-num { font-size: 2em; font-weight: 800; color: var(--brand); line-height: 1.1; }
+  .stat-label { color: var(--muted); font-size: 0.9em; margin-top: 4px; }
+
   @media (max-width: 640px) {
     .wrap { padding: 18px 12px 70px; }
     .file-item { flex-wrap: wrap; }
     .file-item .fi-actions { width: 100%; justify-content: flex-start; }
     .card { padding: 18px 16px; }
+    .admin-layout { grid-template-columns: 1fr; }
+    .admin-side { position: static; }
+    .admin-nav { flex-direction: row; overflow-x: auto; }
+    .admin-nav button { white-space: nowrap; width: auto; }
+    .module { padding: 18px 16px; }
   }
 </style>
 </head>
@@ -238,75 +294,94 @@
     </div>
   </div>
 
-  <div id="dashboardView" class="hidden">
-    <div class="card">
-      <h2>公告管理</h2>
-      <label for="notice">公告内容</label>
-      <textarea id="notice" placeholder="输入要展示在首页的公告内容"></textarea>
-      <div class="actions">
-        <button id="saveNoticeBtn">保存公告</button>
-        <span class="msg" id="noticeMsg"></span>
-      </div>
-    </div>
+  <div id="dashboardView" class="admin-layout hidden">
+    <aside class="admin-side">
+      <div class="admin-brand">管理模块</div>
+      <nav class="admin-nav" id="adminNav">
+        <button type="button" data-module="overview" class="active">概览</button>
+        <button type="button" data-module="notice">公告管理</button>
+        <button type="button" data-module="upload">上传文件</button>
+        <button type="button" data-module="files">文件列表</button>
+        <button type="button" data-module="folders">文件夹分类</button>
+      </nav>
+      <button class="ghost mini" id="logoutBtn">退出登录</button>
+    </aside>
 
-    <div class="card">
-      <h2>上传文件</h2>
-      <div id="drop">点击选择文件，或拖拽到此处</div>
-      <input type="file" id="fileInput" class="hidden">
-      <div class="row">
-        <div>
-          <label for="displayName">显示名称（可选）</label>
-          <input type="text" id="displayName" placeholder="默认使用文件名">
+    <div class="admin-main">
+      <section class="module" id="module-overview">
+        <h2>概览</h2>
+        <div class="stat-grid">
+          <div class="stat"><div class="stat-num" id="statFiles">0</div><div class="stat-label">文件</div></div>
+          <div class="stat"><div class="stat-num" id="statFolders">0</div><div class="stat-label">文件夹</div></div>
         </div>
-        <div>
-          <label for="fileName">存储文件名（可选）</label>
-          <input type="text" id="fileName" placeholder="默认使用原文件名">
-        </div>
-      </div>
-      <div class="row">
-        <div>
-          <label for="fileDesc">描述（可选）</label>
-          <input type="text" id="fileDesc" placeholder="例如：Minecraft 皮肤还原插件">
-        </div>
-        <div>
-          <label for="uploadFolder">所属文件夹</label>
-          <select id="uploadFolder"></select>
-        </div>
-      </div>
-      <div class="actions">
-        <button id="uploadBtn" disabled>开始上传</button>
-        <span class="msg" id="uploadMsg"></span>
-      </div>
-      <div id="uploadProgress" class="hidden">
-        <div id="uploadProgressFill"></div>
-      </div>
-      <div class="hint">单文件上限约 95MB；更大的文件请使用外链方式。<br>
-        上传 .txt 文件时，支持 <code>名称:"网址"</code> 格式（每行一条，可加行尾介绍）：<br>
-        <code>百度:"https://www.baidu.com" 中国最大的搜索引擎</code><br>
-        单个网址 → 首页点击直接跳转；多个网址 → 点开为分页列表。</div>
-    </div>
+        <div class="hint">在左侧切换模块进行管理。</div>
+      </section>
 
-    <div class="card">
-      <h2>文件夹分类</h2>
-      <div class="row">
-        <div class="grow">
-          <input type="text" id="folderName" placeholder="输入新文件夹名称，如：常用工具">
+      <section class="module hidden" id="module-notice">
+        <h2>公告管理</h2>
+        <label for="notice">公告内容</label>
+        <textarea id="notice" placeholder="输入要展示在首页的公告内容"></textarea>
+        <div class="actions">
+          <button id="saveNoticeBtn">保存公告</button>
+          <span class="msg" id="noticeMsg"></span>
         </div>
-        <button id="createFolderBtn">新建文件夹</button>
-      </div>
-      <div class="folder-chips" id="folderChips"></div>
-      <span class="msg" id="folderMsg"></span>
-    </div>
+      </section>
 
-    <div class="card">
-      <h2>文件列表</h2>
-      <input type="text" id="searchInput" placeholder="搜索文件名 / 描述…" style="margin-bottom:6px;">
-      <div id="fileGroups"></div>
-      <div class="msg" id="listMsg"></div>
-    </div>
+      <section class="module hidden" id="module-upload">
+        <h2>上传文件</h2>
+        <div id="drop">点击选择文件，或拖拽到此处</div>
+        <input type="file" id="fileInput" class="hidden">
+        <div class="row">
+          <div>
+            <label for="displayName">显示名称（可选）</label>
+            <input type="text" id="displayName" placeholder="默认使用文件名">
+          </div>
+          <div>
+            <label for="fileName">存储文件名（可选）</label>
+            <input type="text" id="fileName" placeholder="默认使用原文件名">
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="fileDesc">描述（可选）</label>
+            <input type="text" id="fileDesc" placeholder="例如：Minecraft 皮肤还原插件">
+          </div>
+          <div>
+            <label for="uploadFolder">所属文件夹</label>
+            <select id="uploadFolder"></select>
+          </div>
+        </div>
+        <div class="actions">
+          <button id="uploadBtn" disabled>开始上传</button>
+          <span class="msg" id="uploadMsg"></span>
+        </div>
+        <div id="uploadProgress" class="hidden">
+          <div id="uploadProgressFill"></div>
+        </div>
+        <div class="hint">单文件上限约 95MB；更大的文件请使用外链方式。<br>
+          上传 .txt 文件时，支持 <code>名称:"网址"</code> 格式（每行一条，可加行尾介绍）：<br>
+          <code>百度:"https://www.baidu.com" 中国最大的搜索引擎</code><br>
+          单个网址 → 首页点击直接跳转；多个网址 → 点开为分页列表。</div>
+      </section>
 
-    <div class="actions">
-      <button class="ghost" id="logoutBtn">退出登录</button>
+      <section class="module hidden" id="module-files">
+        <h2>文件列表</h2>
+        <input type="text" id="searchInput" placeholder="搜索文件名 / 描述…" style="margin-bottom:6px;">
+        <div id="fileGroups"></div>
+        <div class="msg" id="listMsg"></div>
+      </section>
+
+      <section class="module hidden" id="module-folders">
+        <h2>文件夹分类</h2>
+        <div class="row">
+          <div class="grow">
+            <input type="text" id="folderName" placeholder="输入新文件夹名称，如：常用工具">
+          </div>
+          <button id="createFolderBtn">新建文件夹</button>
+        </div>
+        <div class="folder-chips" id="folderChips"></div>
+        <span class="msg" id="folderMsg"></span>
+      </section>
     </div>
   </div>
 </div>
@@ -722,6 +797,13 @@
     }
   }
 
+  function updateStats() {
+    var f = $('statFiles');
+    var d = $('statFolders');
+    if (f) f.textContent = state.files.length;
+    if (d) d.textContent = state.folders.length;
+  }
+
   function loadFiles() {
     return api('/api/files').then(function (data) {
       state.files = (data && data.files) || [];
@@ -729,6 +811,7 @@
       renderFolderChips();
       renderFolderSelect();
       renderFiles();
+      updateStats();
     }).catch(function (err) {
       setMsg($('listMsg'), err.message, false);
     });
@@ -742,9 +825,35 @@
     });
   }
 
+  // ===== 模块切换 =====
+  var MODULES = ['overview', 'notice', 'upload', 'files', 'folders'];
+
+  function showModule(name) {
+    if (MODULES.indexOf(name) < 0) name = 'overview';
+    MODULES.forEach(function (m) {
+      var el = $('module-' + m);
+      if (el) el.classList.toggle('hidden', m !== name);
+    });
+    var nav = $('adminNav');
+    if (nav) {
+      Array.prototype.forEach.call(nav.querySelectorAll('button[data-module]'), function (btn) {
+        btn.classList.toggle('active', btn.getAttribute('data-module') === name);
+      });
+    }
+  }
+
+  var adminNav = $('adminNav');
+  if (adminNav) {
+    adminNav.addEventListener('click', function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest('button[data-module]') : null;
+      if (btn) showModule(btn.getAttribute('data-module'));
+    });
+  }
+
   function enterDashboard() {
     show($('loginView'), false);
     show($('dashboardView'), true);
+    showModule('overview');
     loadNotice();
     loadFiles();
   }
