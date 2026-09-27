@@ -504,6 +504,26 @@
         }
         .back-btn:hover { background: #fff; box-shadow: var(--shadow); transform: translateX(-2px); }
 
+        .dc-search { margin: 0 0 12px; }
+        .dc-search input {
+            width: 100%;
+            padding: 11px 18px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.72);
+            font-size: 1em;
+            font-family: inherit;
+            color: var(--text-main);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+        .dc-search input::placeholder { color: #9db7bd; }
+        .dc-search input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(0,188,212,0.16);
+        }
+
         .folder-bar { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
         .folder-chip {
             display: inline-flex; align-items: center; gap: 7px;
@@ -843,6 +863,9 @@
                         <h2>数据中心</h2>
                         <p class="dc-sub">按分类浏览并下载所需文件</p>
                     </div>
+                    <div class="dc-search">
+                        <input id="dcSearch" type="search" autocomplete="off" placeholder="搜索文件名 / 描述…" oninput="onDcSearch(this.value)">
+                    </div>
                     <div id="folderBar" class="folder-bar"></div>
                     <ul id="dataCenterDownloadList" class="file-card-list"></ul>
                 </div>
@@ -1118,7 +1141,12 @@
         }
 
         // ===== 数据中心：文件夹分类 + 文件图标 =====
-        var dcState = { files: [], folders: [], active: 'all' };
+        var dcState = { files: [], folders: [], active: 'all', keyword: '' };
+
+        function onDcSearch(value) {
+            dcState.keyword = String(value || '').trim().toLowerCase();
+            renderDataCenter();
+        }
         var DC_EXT_TYPES = {
             pdf: 'pdf', doc: 'doc', docx: 'doc', rtf: 'doc', odt: 'doc',
             xls: 'xls', xlsx: 'xls', csv: 'xls', ods: 'xls',
@@ -1253,17 +1281,27 @@
             return li;
         }
 
+        function dcMatches(item, keyword) {
+            if (!keyword) return true;
+            var hay = [(item && item.name) || '', (item && item.desc) || '', (item && item.key) || '', (item && item.file) || '']
+                .join(' ').toLowerCase();
+            return hay.indexOf(keyword) >= 0;
+        }
+
         function renderDataCenter() {
             var ul = document.getElementById('dataCenterDownloadList');
             if (!ul) return;
             ul.innerHTML = '';
+            var keyword = dcState.keyword;
             var list = dcState.files.filter(function (item) {
-                return dcState.active === 'all' || dcCategoryOf(item) === dcState.active;
+                if (dcState.active !== 'all' && dcCategoryOf(item) !== dcState.active) return false;
+                return dcMatches(item, keyword);
             });
             if (!list.length) {
                 var empty = document.createElement('li');
                 empty.className = 'dc-empty';
-                empty.textContent = dcState.files.length ? '此分类暂无文件。' : '暂无文件，请稍后再来。';
+                if (keyword) empty.textContent = '没有找到匹配「' + dcState.keyword + '」的文件。';
+                else empty.textContent = dcState.files.length ? '此分类暂无文件。' : '暂无文件，请稍后再来。';
                 ul.appendChild(empty);
                 return;
             }
@@ -1327,6 +1365,9 @@
                 // 每次进入都回到文件列表视图
                 resetLinkDetailView();
                 dcState.active = 'all';
+                dcState.keyword = '';
+                var searchEl = document.getElementById('dcSearch');
+                if (searchEl) searchEl.value = '';
                 loadDataCenter();
             }
         }
