@@ -65,8 +65,8 @@
             box-sizing: border-box;
         }
         body {
-            background-color: #f5f3ff;
-            color: #1e293b;
+            background-color: #e0f7fa;
+            color: #006064;
             font-family: "Noto Serif SC","Source Han Serif SC","Songti SC","STSong","Microsoft YaHei","微软雅黑",sans-serif;
             margin: 0;
             padding: 0;
@@ -76,9 +76,9 @@
             position: fixed;
             inset: 0;
             z-index: -1;
-            background-color: #f5f3ff;
+            background-color: #e0f7fa;
             background-image:
-                linear-gradient(135deg, rgba(161,140,209,0.42) 0%, rgba(251,194,235,0.34) 42%, rgba(161,196,253,0.42) 100%),
+                linear-gradient(135deg, rgba(0,188,212,0.34) 0%, rgba(128,222,234,0.28) 45%, rgba(0,151,167,0.4) 100%),
                 url('res/index.png');
             background-size: cover, cover;
             background-position: center center, center center;
@@ -108,7 +108,7 @@
             padding: 24px 8px 16px 8px;
             background: rgba(255,255,255,0.8); /* 80% 透明度 */
             border-radius: 0 12px 12px 0;
-            box-shadow: 2px 4px 16px rgba(168,85,247,0.08);
+            box-shadow: 2px 4px 16px rgba(0,188,212,0.08);
             width: 208px; /* 展开时的固定宽度，便于平滑过渡 */
             transition: width 0.42s cubic-bezier(0.22, 1, 0.36, 1),
                         background 0.3s ease,
@@ -119,10 +119,10 @@
         #quick-bar.closed {
             width: 56px;
             background: rgba(255,255,255,0.7);
-            box-shadow: 2px 4px 12px rgba(168,85,247,0.06);
+            box-shadow: 2px 4px 12px rgba(0,188,212,0.06);
         }
         #quick-bar a {
-            color: #6366f1;
+            color: #0097a7;
             font-size: 1.1em;
             text-decoration: none;
             font-family: "Noto Serif SC","Source Han Serif SC","Songti SC","STSong","Microsoft YaHei","微软雅黑",sans-serif;
@@ -140,7 +140,7 @@
                         transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
         }
         #quick-bar a:hover {
-            color: #4f46e5;
+            color: #00838f;
         }
         #quick-bar.closed a {
             opacity: 0;
@@ -227,7 +227,7 @@
         }
         .logo-title {
             font-size: 2em;
-            color: #6366f1;
+            color: #0097a7;
             font-family: "Noto Serif SC","Source Han Serif SC","Songti SC","STSong","Microsoft YaHei","微软雅黑",sans-serif;
             font-style: italic;
             font-weight: bold;
@@ -251,7 +251,7 @@
             margin: 0;
         }
         .enter-btn {
-            background-color: #6366f1;
+            background-color: #0097a7;
             color: #fff;
             border: none;
             padding: 14px 32px;
@@ -264,7 +264,7 @@
             min-width: 120px;
         }
         .enter-btn:hover {
-            background-color: #4f46e5;
+            background-color: #00838f;
             opacity: 1;
         }
         .main-content {
@@ -310,7 +310,7 @@
             );
             -webkit-backdrop-filter: blur(6px) saturate(1.2);
             backdrop-filter: blur(6px) saturate(1.2);
-            color: #4338ca;
+            color: #00727d;
             text-align: center;
             padding: 10px 12px 12px;
             position: fixed;
@@ -333,7 +333,7 @@
         .hitokoto-card {
             background: rgba(255,255,255,0.6);
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(168,85,247,0.08);
+            box-shadow: 0 2px 8px rgba(0,188,212,0.08);
             padding: 22px 30px 20px;
             /* 宽度随内容自适应：内容放不下时自动变宽，超过上限再换行 */
             width: fit-content;
@@ -344,7 +344,7 @@
             text-align: left;
         }
         .hitokoto-card h3 {
-            color: #6366f1;
+            color: #0097a7;
             margin: 0;
             text-align: left;
             font-size: 1.05em;
@@ -359,7 +359,7 @@
             height: 2px;
             margin: 8px 0 0;
             border-radius: 2px;
-            background: rgba(99,102,241,0.35);
+            background: rgba(0,151,167,0.35);
         }
         .hitokoto-quote {
             position: relative;
@@ -369,13 +369,13 @@
             padding: 0;
             line-height: 1.85;
             font-size: 1.06em;
-            color: #1e293b;
+            color: #006064;
             word-break: break-word;
             text-wrap: pretty;
         }
         .hitokoto-from {
             text-align: left;
-            color: #4f46e5;
+            color: #00838f;
             font-size: 0.88em;
             margin: 0 0 16px;
             min-height: 1.3em;
@@ -385,19 +385,19 @@
             display: block;
             margin: 0;
             color: #fff;
-            background: #a855f7;
+            background: #00bcd4;
             padding: 8px 24px;
             border: none;
             border-radius: 999px;
             cursor: pointer;
             font-size: 0.95em;
             letter-spacing: 0.08em;
-            box-shadow: 0 2px 6px rgba(168,85,247,0.28);
+            box-shadow: 0 2px 6px rgba(0,188,212,0.28);
             transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
         }
         .hitokoto-refresh:hover {
-            background: #7c3aed;
-            box-shadow: 0 4px 12px rgba(168,85,247,0.4);
+            background: #00acc1;
+            box-shadow: 0 4px 12px rgba(0,188,212,0.4);
         }
         .hitokoto-refresh:active {
             transform: scale(0.95);
@@ -446,25 +446,25 @@
     <style>
         /* ===== 现代化视觉与数据中心 ===== */
         :root {
-            --brand: #6366f1;
-            --brand-strong: #4f46e5;
-            --accent: #a855f7;
+            --brand: #0097a7;
+            --brand-strong: #00838f;
+            --accent: #00bcd4;
             --card: rgba(255,255,255,0.42);
-            --text-main: #0f172a;
-            --muted: #64748b;
+            --text-main: #084c54;
+            --muted: #5d7c84;
             --border: rgba(255,255,255,0.5);
             --radius: 24px;
             --radius-sm: 16px;
-            --shadow: 0 20px 45px rgba(99,102,241,0.16);
-            --shadow-hover: 0 28px 60px rgba(99,102,241,0.24);
+            --shadow: 0 20px 45px rgba(0,151,167,0.16);
+            --shadow-hover: 0 28px 60px rgba(0,151,167,0.24);
         }
         body { color: var(--text-main); -webkit-font-smoothing: antialiased; }
         /* 细滚动条（靛蓝） */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.7); }
-        * { scrollbar-width: thin; scrollbar-color: rgba(99,102,241,0.3) transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,151,167,0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0,151,167,0.7); }
+        * { scrollbar-width: thin; scrollbar-color: rgba(0,151,167,0.3) transparent; }
         .head-flex { animation: dcIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
         .logo-title { letter-spacing: 3px; text-shadow: 0 2px 10px rgba(255,255,255,0.6); }
 
@@ -522,7 +522,7 @@
         .folder-chip.active {
             background: linear-gradient(135deg, var(--accent), var(--brand));
             color: #fff; border-color: transparent;
-            box-shadow: 0 8px 20px rgba(99,102,241,0.28);
+            box-shadow: 0 8px 20px rgba(0,151,167,0.28);
         }
         .folder-chip.active img { filter: brightness(0) invert(1); }
         .folder-chip .fc-count { opacity: 0.72; font-size: 0.85em; }
@@ -542,7 +542,7 @@
         .file-card-name {
             color: var(--brand);
             text-decoration: underline;
-            text-decoration-color: rgba(99,102,241,0.4);
+            text-decoration-color: rgba(0,151,167,0.4);
             text-underline-offset: 3px;
             font-size: 1.06em;
             font-weight: 600;
@@ -552,9 +552,9 @@
         .file-card-meta { color: var(--muted); font-size: 0.88em; margin-top: 4px; word-break: break-all; }
         .badge {
             margin-left: 8px; font-size: 0.68em; font-weight: 600;
-            color: var(--brand-strong); border: 1px solid rgba(168,85,247,0.5);
+            color: var(--brand-strong); border: 1px solid rgba(0,188,212,0.5);
             border-radius: 6px; padding: 1px 7px; vertical-align: middle;
-            text-decoration: none; display: inline-block; background: rgba(168,85,247,0.08);
+            text-decoration: none; display: inline-block; background: rgba(0,188,212,0.08);
         }
         .file-card-arrow { color: var(--brand); font-size: 1.2em; flex-shrink: 0; opacity: 0.45; transition: transform 0.2s ease, opacity 0.2s ease; }
         .file-card:hover .file-card-arrow { transform: translateX(3px); opacity: 1; }
@@ -575,19 +575,19 @@
             gap: 8px;
             font-weight: 600;
             letter-spacing: 1px;
-            color: #4338ca;
+            color: #00727d;
         }
         .footer-brand img { width: 30px; height: auto; flex-shrink: 0; }
         .footer-brand span { font-size: 0.98em; }
-        .footer-slogan { color: #6366f1; font-size: 0.82em; font-style: italic; }
-        .footer-meta { font-size: 0.86em; color: #4338ca; }
-        .footer-meta a { color: #6366f1; text-decoration: underline; }
+        .footer-slogan { color: #0097a7; font-size: 0.82em; font-style: italic; }
+        .footer-meta { font-size: 0.86em; color: #00727d; }
+        .footer-meta a { color: #0097a7; text-decoration: underline; }
         .footer-links { display: flex; gap: 22px; margin-top: 2px; }
         .footer-links a {
-            color: #6366f1; text-decoration: underline; font-style: italic;
+            color: #0097a7; text-decoration: underline; font-style: italic;
             font-size: 0.88em; font-family: inherit; transition: color 0.2s ease;
         }
-        .footer-links a:hover { color: #4f46e5; }
+        .footer-links a:hover { color: #00838f; }
 
         /* 三角洲每日密码 */
         .df-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
@@ -596,7 +596,7 @@
             min-height: 168px;
             border-radius: 14px;
             overflow: hidden;
-            background-color: #312e81;
+            background-color: #043b42;
             border: 1px solid var(--border);
             box-shadow: var(--shadow);
             display: flex;
@@ -659,10 +659,10 @@
             background: linear-gradient(135deg, var(--accent), var(--brand));
             color: #fff; border: none; border-radius: 999px;
             padding: 9px 22px; font-size: 0.95em; font-weight: 600; font-family: inherit;
-            cursor: pointer; box-shadow: 0 8px 20px rgba(99,102,241,0.26);
+            cursor: pointer; box-shadow: 0 8px 20px rgba(0,151,167,0.26);
             transition: transform 0.15s ease, box-shadow 0.2s ease;
         }
-        .df-refresh:hover { transform: translateY(-1px); box-shadow: 0 12px 26px rgba(99,102,241,0.32); }
+        .df-refresh:hover { transform: translateY(-1px); box-shadow: 0 12px 26px rgba(0,151,167,0.32); }
         .df-refresh:active { transform: scale(0.97); }
         .df-updated { color: var(--muted); font-size: 0.85em; }
 
@@ -686,16 +686,16 @@
         }
         .music-search input:focus {
             outline: none; border-color: var(--accent);
-            box-shadow: 0 0 0 4px rgba(168,85,247,0.16);
+            box-shadow: 0 0 0 4px rgba(0,188,212,0.16);
         }
         .music-btn {
             flex: 0 0 auto; padding: 12px 28px; border: none; border-radius: 999px;
             background: linear-gradient(135deg, var(--accent), var(--brand));
             color: #fff; font-size: 1em; font-weight: 600; font-family: inherit; cursor: pointer;
-            box-shadow: 0 8px 20px rgba(99,102,241,0.26);
+            box-shadow: 0 8px 20px rgba(0,151,167,0.26);
             transition: transform 0.15s ease, box-shadow 0.2s ease;
         }
-        .music-btn:hover { transform: translateY(-1px); box-shadow: 0 12px 26px rgba(99,102,241,0.32); }
+        .music-btn:hover { transform: translateY(-1px); box-shadow: 0 12px 26px rgba(0,151,167,0.32); }
         .music-btn:active { transform: scale(0.97); }
         .music-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
@@ -708,7 +708,7 @@
         }
         .music-cover {
             width: 168px; height: 168px; border-radius: 12px; object-fit: cover;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.15); flex-shrink: 0; background: #f5f3ff;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15); flex-shrink: 0; background: #e0f7fa;
         }
         .music-info { flex: 1 1 260px; min-width: 0; }
         .music-title { font-size: 1.3em; font-weight: 700; color: var(--text-main); margin: 0 0 6px; word-break: break-all; }
@@ -716,7 +716,7 @@
         .music-tags { margin: 10px 0 14px; display: flex; flex-wrap: wrap; gap: 6px; }
         .music-tag {
             font-size: 0.78em; color: var(--brand-strong);
-            background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.3);
+            background: rgba(0,188,212,0.1); border: 1px solid rgba(0,188,212,0.3);
             border-radius: 999px; padding: 2px 10px;
         }
         .music-info audio { width: 100%; margin: 4px 0 12px; }
@@ -731,7 +731,7 @@
         .music-actions a:hover, .music-actions button:hover { background: #fff; box-shadow: var(--shadow); transform: translateY(-1px); }
         .music-actions .primary {
             background: linear-gradient(135deg, var(--accent), var(--brand));
-            color: #fff; border-color: transparent; box-shadow: 0 8px 20px rgba(99,102,241,0.24);
+            color: #fff; border-color: transparent; box-shadow: 0 8px 20px rgba(0,151,167,0.24);
         }
         .music-lyrics {
             margin-top: 18px; padding: 16px 18px; border-radius: var(--radius-sm);
@@ -753,7 +753,7 @@
             transition: transform 0.18s ease, box-shadow 0.2s ease, background 0.2s ease;
         }
         .music-item:hover { transform: translateX(3px); background: #fff; box-shadow: var(--shadow); }
-        .music-item img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; flex-shrink: 0; background: #f5f3ff; }
+        .music-item img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; flex-shrink: 0; background: #e0f7fa; }
         .music-item .mi-main { min-width: 0; }
         .music-item .mi-name { font-weight: 600; color: var(--text-main); word-break: break-all; }
         .music-item .mi-sub { color: var(--muted); font-size: 0.85em; margin-top: 2px; word-break: break-all; }
@@ -801,7 +801,7 @@
         <img src="res/indexphoto.jpg" alt="indexphoto" class="welcome-img">
     </div>
 </head>
-<body style="background-color: #f5f3ff;">
+<body style="background-color: #e0f7fa;">
     <!-- 快捷栏 -->
     <div id="quick-bar" class="closed">
         <div class="quick-bar-toggle-inner" onclick="toggleQuickBar()" title="展开/收起侧边栏">
@@ -902,19 +902,19 @@
         <div id="userNoticeContent" style="
             background:rgba(255,255,255,0.98);
             border-radius:14px;
-            box-shadow:0 6px 32px rgba(168,85,247,0.13);
+            box-shadow:0 6px 32px rgba(0,188,212,0.13);
             max-width:92vw;
             width:400px;
             padding:32px 22px 22px 22px;
             position:relative;
-            color:#1e293b;
+            color:#006064;
             font-size:1.08em;
             line-height:1.7;
             text-align:left;
             animation: modalFadeIn 0.35s;
         ">
-            <button onclick="closeUserNotice()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.5em;color:#6366f1;cursor:pointer;">&times;</button>
-            <h2 style="margin-top:0;color:#6366f1;font-size:1.25em;text-align:center;">用户须知</h2>
+            <button onclick="closeUserNotice()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.5em;color:#0097a7;cursor:pointer;">&times;</button>
+            <h2 style="margin-top:0;color:#0097a7;font-size:1.25em;text-align:center;">用户须知</h2>
             <div class="modal-scroll" style="font-size:1em;">
                 <ol style="padding-left:1.2em;">
                     <li>本网站为公益性数据分享平台，所有资源仅供学习、研究与交流使用，严禁用于任何商业用途。</li>
@@ -1355,7 +1355,7 @@
             });
         }
         function dfFallbackGradient(name) {
-            var palettes = ['#6366f1,#312e81', '#a855f7,#4c1d95', '#8b5cf6,#1e1b4b', '#818cf8,#1e293b', '#ec4899,#831843'];
+            var palettes = ['#0097a7,#043b42', '#00bcd4,#01579b', '#00838f,#002f36', '#4dd0e1,#0d4a6b', '#26c6da,#052331'];
             var sum = 0;
             for (var i = 0; i < name.length; i += 1) sum += name.charCodeAt(i);
             return palettes[sum % palettes.length];
@@ -1857,7 +1857,7 @@
                 list.appendChild(li);
             });
             if (totalPages > 1) {
-                var btnStyle = 'background:linear-gradient(135deg,#a855f7,#6366f1);color:#fff;border:none;border-radius:999px;padding:7px 18px;cursor:pointer;font-family:inherit;font-size:0.92em;font-weight:600;box-shadow:0 6px 16px rgba(99,102,241,0.24);';
+                var btnStyle = 'background:linear-gradient(135deg,#00bcd4,#0097a7);color:#fff;border:none;border-radius:999px;padding:7px 18px;cursor:pointer;font-family:inherit;font-size:0.92em;font-weight:600;box-shadow:0 6px 16px rgba(0,151,167,0.24);';
                 var prev = document.createElement('button');
                 prev.textContent = '上一页';
                 prev.style = btnStyle;
@@ -1866,7 +1866,7 @@
                 prev.onclick = function() { linkState.page -= 1; renderLinkPage(); };
                 var info = document.createElement('span');
                 info.textContent = (linkState.page + 1) + ' / ' + totalPages;
-                info.style = 'color:#1e293b;';
+                info.style = 'color:#006064;';
                 var next = document.createElement('button');
                 next.textContent = '下一页';
                 next.style = btnStyle;

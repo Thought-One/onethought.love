@@ -8,29 +8,29 @@
 <link rel="icon" href="/res/indexphoto.jpg" type="image/jpeg">
 <style>
   :root {
-    --brand: #6366f1;
-    --brand-strong: #4f46e5;
-    --brand-soft: #f5f3ff;
-    --accent: #a855f7;
-    --bg-1: #f5f3ff;
-    --bg-2: #ede9fe;
+    --brand: #0097a7;
+    --brand-strong: #00838f;
+    --brand-soft: #e0f7fa;
+    --accent: #00bcd4;
+    --bg-1: #e0f7fa;
+    --bg-2: #b2ebf2;
     --card: rgba(255,255,255,0.5);
     --card-solid: #ffffff;
-    --text: #0f172a;
-    --muted: #64748b;
+    --text: #084c54;
+    --muted: #5d7c84;
     --border: rgba(255,255,255,0.5);
     --radius: 24px;
     --radius-sm: 14px;
-    --shadow: 0 20px 45px rgba(99,102,241,0.14);
-    --shadow-hover: 0 26px 56px rgba(99,102,241,0.2);
+    --shadow: 0 20px 45px rgba(0,151,167,0.14);
+    --shadow-hover: 0 26px 56px rgba(0,151,167,0.2);
     --danger: #e5484d;
   }
   * { box-sizing: border-box; }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 10px; }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.7); }
-  * { scrollbar-width: thin; scrollbar-color: rgba(99,102,241,0.3) transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(0,151,167,0.3); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(0,151,167,0.7); }
+  * { scrollbar-width: thin; scrollbar-color: rgba(0,151,167,0.3) transparent; }
   html, body { height: 100%; }
   body {
     margin: 0;
@@ -56,7 +56,7 @@
   .topbar h1 .dot {
     width: 12px; height: 12px; border-radius: 50%;
     background: linear-gradient(135deg, var(--accent), var(--brand-strong));
-    box-shadow: 0 0 0 4px rgba(168,85,247,0.18);
+    box-shadow: 0 0 0 4px rgba(0,188,212,0.18);
   }
   .topbar a {
     color: var(--brand); text-decoration: none; font-size: 0.95em;
@@ -96,10 +96,10 @@
     background: rgba(255,255,255,0.9);
     transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   }
-  input::placeholder, textarea::placeholder { color: #94a3b8; }
+  input::placeholder, textarea::placeholder { color: #9db7bd; }
   input:focus, textarea:focus, select:focus {
     outline: none; border-color: var(--accent); background: #fff;
-    box-shadow: 0 0 0 4px rgba(168,85,247,0.16);
+    box-shadow: 0 0 0 4px rgba(0,188,212,0.16);
   }
   textarea { resize: vertical; min-height: 90px; }
   select { cursor: pointer; }
@@ -109,10 +109,10 @@
     color: #fff; border: none; border-radius: 999px;
     padding: 10px 22px; font-size: 0.95em; font-family: inherit; font-weight: 600;
     cursor: pointer; letter-spacing: 0.3px;
-    box-shadow: 0 6px 16px rgba(99,102,241,0.24);
+    box-shadow: 0 6px 16px rgba(0,151,167,0.24);
     transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
   }
-  button:hover { transform: translateY(-1px); box-shadow: 0 10px 22px rgba(99,102,241,0.3); filter: brightness(1.04); }
+  button:hover { transform: translateY(-1px); box-shadow: 0 10px 22px rgba(0,151,167,0.3); filter: brightness(1.04); }
   button:active { transform: translateY(0) scale(0.98); }
   button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
   button.ghost {
@@ -130,18 +130,18 @@
 
   /* 拖拽上传区 */
   #drop {
-    border: 2px dashed rgba(99,102,241,0.35);
+    border: 2px dashed rgba(0,151,167,0.35);
     border-radius: var(--radius-sm);
     padding: 26px 18px; text-align: center; color: var(--brand);
     cursor: pointer; background: rgba(224,247,250,0.5);
     transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
   }
   #drop:hover { background: rgba(178,235,242,0.6); border-color: var(--accent); }
-  #drop.hover { background: #ede9fe; border-color: var(--brand); transform: scale(1.01); }
+  #drop.hover { background: #b2ebf2; border-color: var(--brand); transform: scale(1.01); }
 
   #uploadProgress {
     margin-top: 12px; height: 10px; border-radius: 999px;
-    background: rgba(99,102,241,0.12); overflow: hidden;
+    background: rgba(0,151,167,0.12); overflow: hidden;
   }
   #uploadProgressFill {
     height: 100%; width: 0%;
@@ -163,7 +163,7 @@
   .msg.err { color: var(--danger); }
   .hidden { display: none !important; }
   .hint { color: var(--muted); font-size: 0.85em; margin-top: 8px; line-height: 1.7; }
-  code { background: rgba(99,102,241,0.1); padding: 1px 6px; border-radius: 6px; font-size: 0.92em; }
+  code { background: rgba(0,151,167,0.1); padding: 1px 6px; border-radius: 6px; font-size: 0.92em; }
 
   /* 文件夹标签 */
   .folder-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
@@ -180,7 +180,7 @@
     background: transparent; border: none; box-shadow: none; color: var(--muted);
     padding: 2px 6px; font-size: 0.82em; border-radius: 8px; font-weight: 600;
   }
-  .chip-btn:hover { background: rgba(99,102,241,0.1); color: var(--brand-strong); transform: none; box-shadow: none; }
+  .chip-btn:hover { background: rgba(0,151,167,0.1); color: var(--brand-strong); transform: none; box-shadow: none; }
   .chip-btn.del:hover { background: rgba(229,72,77,0.12); color: var(--danger); }
   .empty { color: var(--muted); font-size: 0.92em; padding: 8px 0; }
 
