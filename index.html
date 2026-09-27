@@ -83,16 +83,12 @@
             background-repeat: no-repeat;
         }
         main {
-            position: absolute;
-            top: 110px;
-            bottom: 128px;
-            left: 0;
-            right: 0;
-            overflow-y: auto;
+            /* 随文档整体滚动，避免内容区出现内部滚动条（小窗口滚动条） */
+            position: relative;
             width: 100%;
             max-width: 800px;
             margin: 0 auto;
-            padding: 40px 8px;
+            padding: 36px 8px 150px;
             text-align: center;
             background: transparent;
         }
@@ -215,7 +211,7 @@
                 width: 16px;
                 height: 2px;
             }
-            main { padding: 16px 2vw; }
+            main { padding: 24px 3vw 160px; }
             .welcome-img { width: 90vw; }
             .enter-btn { font-size: 1em; padding: 10px 0; width: 90vw; }
             .main-content { padding: 0; }
@@ -586,14 +582,12 @@
         .footer-links a:hover { color: #00838f; }
 
         /* 三角洲每日密码 */
-        .df-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+        .df-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
         .df-card {
             position: relative;
-            min-height: 200px;
+            min-height: 168px;
             border-radius: 14px;
             overflow: hidden;
-            background-size: cover;
-            background-position: center;
             background-color: #043b42;
             border: 1px solid var(--border);
             box-shadow: var(--shadow);
@@ -606,7 +600,7 @@
         .df-card::after {
             content: "";
             position: absolute; inset: 0;
-            background: linear-gradient(180deg, rgba(4,28,32,0.06) 32%, rgba(4,28,32,0.84) 100%);
+            background: linear-gradient(180deg, rgba(4,28,32,0.04) 26%, rgba(4,28,32,0.88) 100%);
         }
         .df-card-bg {
             position: absolute; inset: 0; z-index: 0;
@@ -614,25 +608,17 @@
             object-fit: cover;
             display: block;
         }
-        .df-card-body { position: relative; z-index: 1; width: 100%; padding: 16px 18px; }
+        .df-card-body { position: relative; z-index: 1; width: 100%; padding: 18px 20px; }
         .df-card-desc {
-            color: rgba(255,255,255,0.88);
-            font-size: 0.84em;
-            line-height: 1.6;
-            margin-top: 8px;
+            color: rgba(255,255,255,0.9);
+            font-size: 0.85em;
+            line-height: 1.65;
+            margin-top: 10px;
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
-        .df-card-pics { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-        .df-card-pics img {
-            width: 54px; height: 54px; object-fit: cover; border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.42);
-            transition: transform 0.2s ease;
-            cursor: zoom-in;
-        }
-        .df-card-pics img:hover { transform: scale(1.07); }
         .df-card-name {
             color: #fff; font-size: 1.16em; font-weight: 700;
             letter-spacing: 1px; text-shadow: 0 2px 10px rgba(0,0,0,0.55);
@@ -672,6 +658,15 @@
         .df-refresh:active { transform: scale(0.97); }
         .df-updated { color: var(--muted); font-size: 0.85em; }
 
+        /* 小窗口内部不显示上下滑动条（仍可滚动） */
+        .modal-scroll {
+            max-height: 58vh;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .modal-scroll::-webkit-scrollbar { width: 0; height: 0; display: none; }
+
         .notice-card {
             background: var(--card);
             -webkit-backdrop-filter: blur(12px) saturate(1.15);
@@ -700,7 +695,7 @@
             .footer-meta { font-size: 0.8em; }
             .footer-links { gap: 18px; }
             .footer-links a { font-size: 0.82em; }
-            main { bottom: 144px; }
+            main { padding: 20px 3vw 160px; }
             .df-grid { grid-template-columns: 1fr; }
             .df-pass { font-size: 1.6em; }
         }
@@ -809,7 +804,7 @@
         ">
             <button onclick="closeUserNotice()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.5em;color:#0097a7;cursor:pointer;">&times;</button>
             <h2 style="margin-top:0;color:#0097a7;font-size:1.25em;text-align:center;">用户须知</h2>
-            <div style="max-height:55vh;overflow-y:auto;font-size:1em;">
+            <div class="modal-scroll" style="font-size:1em;">
                 <ol style="padding-left:1.2em;">
                     <li>本网站为公益性数据分享平台，所有资源仅供学习、研究与交流使用，严禁用于任何商业用途。</li>
                     <li>下载和使用本站资源前，请确保已获得相关版权方授权，因个人使用造成的任何法律责任由用户自行承担。</li>
@@ -1229,6 +1224,15 @@
         function dfLocalFile(map) {
             return DF_MAP_FILES[map.mapName] ? ('res/maps/' + DF_MAP_FILES[map.mapName]) : '';
         }
+
+        // 网站加载时即预加载全部地图图片，进入每日密码界面可瞬间显示
+        function preloadMapImages() {
+            Object.keys(DF_MAP_FILES).forEach(function (name) {
+                var img = new Image();
+                img.decoding = 'async';
+                img.src = 'res/maps/' + DF_MAP_FILES[name];
+            });
+        }
         function dfFallbackGradient(name) {
             var palettes = ['#0e6b74,#043b42', '#6b4a12,#2b1c05', '#4a2b6b,#1e0f33', '#0d4a6b,#052331', '#6b2b2b,#33110f'];
             var sum = 0;
@@ -1267,8 +1271,6 @@
                 var localFile = dfLocalFile(map);
                 // 背景：本地官方地图图优先，未知地图用接口的第一张位点截图
                 var bg = localFile || images[0] || '';
-                // 若第一张截图已被用作背景，则缩略图从第二张起
-                var thumbs = (!localFile && images.length) ? images.slice(1) : images;
 
                 var card = document.createElement('div');
                 card.className = 'df-card';
@@ -1277,7 +1279,7 @@
                 if (bg) {
                     var bgImg = document.createElement('img');
                     bgImg.className = 'df-card-bg';
-                    bgImg.loading = 'lazy';
+                    bgImg.loading = 'eager';
                     bgImg.decoding = 'async';
                     bgImg.referrerPolicy = 'no-referrer';
                     bgImg.alt = '';
@@ -1333,26 +1335,6 @@
                     desc.className = 'df-card-desc';
                     desc.textContent = map.desc;
                     body.appendChild(desc);
-                }
-
-                if (thumbs.length) {
-                    var pics = document.createElement('div');
-                    pics.className = 'df-card-pics';
-                    thumbs.forEach(function (src) {
-                        var link = document.createElement('a');
-                        link.href = src;
-                        link.target = '_blank';
-                        link.rel = 'noopener';
-                        var thumb = document.createElement('img');
-                        thumb.loading = 'lazy';
-                        thumb.decoding = 'async';
-                        thumb.referrerPolicy = 'no-referrer';
-                        thumb.src = src;
-                        thumb.alt = (map.mapName || '') + ' 位置图';
-                        link.appendChild(thumb);
-                        pics.appendChild(link);
-                    });
-                    body.appendChild(pics);
                 }
 
                 card.appendChild(body);
@@ -1515,6 +1497,7 @@
                 mainContent.classList.add('show');
                 mainContent.style.display = 'block';
             }
+            preloadMapImages();
             showMainContent();
         });
 
