@@ -8,10 +8,12 @@
 //   地点图片：https://ug.tapimg.com/deltaforce/daily_password/cxjy.jpg
 //
 // 可选环境变量：DF_SECRET_URL 覆盖数据来源地址。
+// 上游偶发 522/超时：这里做重试，并把最近一次成功结果用 Cache API 兜底。
 
 import { json, error } from './http.js';
 
 const SOURCE_URL = 'https://api.s0o1.com/API/sjz/mm';
+const LAST_GOOD_URL = 'https://onethought.internal/df-secret-lastgood';
 
 // 上游可能返回 UTF-8 或 GBK，这里做兼容解码
 async function readText(res) {
@@ -81,32 +83,84 @@ function parse(text) {
   return { updatedText, maps };
 }
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// 带重试的请求：5xx / 网络错误重试，4xx 直接返回
+async function requestUpstream(url) {
+  const attempts = 3;
+  let lastError;
+  for (let i = 0; i < attempts; i += 1) {
+    try {
+      const res = await fetch(url, {
+        headers: { 'User-Agent': 'Mozilla/5.0', Accept: 'text/plain, */*' },
+        cf: { cacheTtl: 120, cacheEverything: true },
+      });
+      if (res.ok || res.status < 500) return res;
+      lastError = Object.assign(new Error(`HTTP ${res.status}`), { status: res.status });
+    } catch (err) {
+      lastError = err;
+    }
+    if (i < attempts - 1) await sleep(500);
+  }
+  throw lastError || new Error('upstream failed');
+}
+
+function cacheStore() {
+  return (typeof caches !== 'undefined' && caches.default) ? caches.default : null;
+}
+
+async function readLastGood() {
+  const store = cacheStore();
+  if (!store) return null;
+  try {
+    const hit = await store.match(LAST_GOOD_URL);
+    if (!hit) return null;
+    const data = await hit.json();
+    return (data && Array.isArray(data.maps) && data.maps.length) ? data : null;
+  } catch (err) {
+    return null;
+  }
+}
+
+async function writeLastGood(payload) {
+  const store = cacheStore();
+  if (!store) return;
+  try {
+    await store.put(LAST_GOOD_URL, new Response(JSON.stringify(payload), {
+      headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'max-age=86400' },
+    }));
+  } catch (err) {
+    // 忽略缓存写入失败
+  }
+}
+
 export async function onRequestGet({ env }) {
   const url = env && String(env.DF_SECRET_URL || '').trim()
     ? String(env.DF_SECRET_URL).trim()
     : SOURCE_URL;
 
-  let upstream;
+  let text = '';
   try {
-    upstream = await fetch(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0', Accept: 'text/plain, */*' },
-      cf: { cacheTtl: 300, cacheEverything: true },
-    });
+    const res = await requestUpstream(url);
+    if (!res.ok) return error(`每日密码接口返回异常 (${res.status})`, 502);
+    text = await readText(res);
   } catch (err) {
-    return error('无法连接每日密码接口，请稍后重试', 502);
+    text = '';
   }
 
-  if (!upstream.ok) return error(`每日密码接口返回异常 (${upstream.status})`, 502);
+  if (text) {
+    const { updatedText, maps } = parse(text);
+    if (!maps.length) return error('暂未获取到密码数据，请稍后重试', 502);
+    const payload = { updatedAt: new Date().toISOString(), updatedText, maps };
+    await writeLastGood(payload);
+    return json({ configured: true, source: 's0o1', ...payload });
+  }
 
-  const text = await readText(upstream);
-  const { updatedText, maps } = parse(text);
-  if (!maps.length) return error('暂未获取到密码数据，请稍后重试', 502);
+  // 上游失败：用最近一次成功结果兜底
+  const cached = await readLastGood();
+  if (cached) {
+    return json({ configured: true, source: 'cache', stale: true, ...cached });
+  }
 
-  return json({
-    configured: true,
-    source: 's0o1',
-    updatedAt: new Date().toISOString(),
-    updatedText,
-    maps,
-  });
+  return error('每日密码接口暂时不可用（上游超时/522），请稍后重试', 502);
 }
