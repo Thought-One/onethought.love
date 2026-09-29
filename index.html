@@ -829,10 +829,10 @@
                 <span class="quick-bar-icon-bar"></span>
             </span>
         </div>
-        <a href="javascript:void(0);" onclick="showMainContent(true)">首页</a>
-        <a href="javascript:void(0);" onclick="showDataCenter(true)">数据中心</a>
-        <a href="javascript:void(0);" onclick="showDeltaPage(true)">三角洲每日密码</a>
-        <a href="javascript:void(0);" onclick="showMusicPage(true)">音乐解析</a>
+        <a href="#/home">首页</a>
+        <a href="#/data">数据中心</a>
+        <a href="#/delta">三角洲每日密码</a>
+        <a href="#/music">音乐解析</a>
     </div>
     <!-- 全局静态背景（纯 CSS 渐变，无额外请求，加载更快） -->
     <div id="globalBg" aria-hidden="true"></div>
@@ -856,7 +856,7 @@
         <div id="dataCenterPage" class="main-content" style="display:none;">
             <div class="dc-shell">
                 <div id="dataCenterListView">
-                    <button class="back-btn" onclick="showMainContent(true)">&#8592; 返回首页</button>
+                    <button class="back-btn" onclick="goto('home')">&#8592; 返回首页</button>
                     <div class="dc-head">
                         <h2>数据中心</h2>
                         <p class="dc-sub">按分类浏览并下载所需文件</p>
@@ -878,7 +878,7 @@
         <!-- 三角洲每日密码 -->
         <div id="deltaPage" class="main-content" style="display:none;">
             <div class="dc-shell">
-                <button class="back-btn" onclick="showMainContent(true)">&#8592; 返回首页</button>
+                <button class="back-btn" onclick="goto('home')">&#8592; 返回首页</button>
                 <div class="dc-head">
                     <h2>三角洲每日密码</h2>
                     <p class="dc-sub">三角洲行动 · 每张地图的今日密码，背景即对应地图</p>
@@ -894,7 +894,7 @@
         <!-- 网易云音乐解析 -->
         <div id="musicPage" class="main-content" style="display:none;">
             <div class="dc-shell music-shell">
-                <button class="back-btn" onclick="showMainContent(true)">&#8592; 返回首页</button>
+                <button class="back-btn" onclick="goto('home')">&#8592; 返回首页</button>
                 <div class="dc-head">
                     <h2>音乐解析</h2>
                     <p class="dc-sub">粘贴网易云歌曲链接 / 歌曲 ID，或直接输入歌名搜索</p>
@@ -1582,6 +1582,38 @@
             if (input) setTimeout(function () { input.focus(); }, 60);
         }
 
+        // ===== 视图路由：每个分区一个子分页（#/home、#/data、#/delta、#/music），刷新保持当前页 =====
+        var VIEW_HANDLERS = {
+            home: showMainContent,
+            data: showDataCenter,
+            delta: showDeltaPage,
+            music: showMusicPage
+        };
+        var currentView = '';
+
+        function goto(view, push) {
+            if (!VIEW_HANDLERS[view]) view = 'home';
+            if (currentView === view) return;
+            currentView = view;
+            VIEW_HANDLERS[view]();
+            var hash = '#/' + view;
+            if (location.hash !== hash) {
+                try {
+                    if (push === false) history.replaceState(null, '', hash);
+                    else location.hash = hash; // 生成历史记录，支持浏览器后退
+                } catch (e) {
+                    location.hash = hash;
+                }
+            }
+        }
+
+        function applyHash() {
+            var view = (location.hash || '').replace(/^#\/?/, '').trim() || 'home';
+            goto(view, false);
+        }
+
+        window.addEventListener('hashchange', applyHash);
+
         function parseMusic() {
             var input = document.getElementById('musicInput');
             var value = (input && input.value || '').trim();
@@ -1930,7 +1962,7 @@
             }
             preloadMapImages();
             warmDeltaSecrets();
-            showMainContent();
+            applyHash();
         });
 
         // 快捷栏展开/关闭：仅切换 class，由 CSS 过渡负责动画
