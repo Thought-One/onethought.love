@@ -635,16 +635,6 @@
             display: block;
         }
         .df-card-body { position: relative; z-index: 1; width: 100%; padding: 18px 20px; }
-        .df-card-desc {
-            color: rgba(255,255,255,0.9);
-            font-size: 0.85em;
-            line-height: 1.65;
-            margin-top: 10px;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
         .df-card-name {
             color: #fff; font-size: 1.16em; font-weight: 700;
             letter-spacing: 1px; text-shadow: 0 2px 10px rgba(0,0,0,0.55);
@@ -1483,13 +1473,6 @@
 
                 body.appendChild(name);
                 body.appendChild(row);
-
-                if (map.desc) {
-                    var desc = document.createElement('div');
-                    desc.className = 'df-card-desc';
-                    desc.textContent = map.desc;
-                    body.appendChild(desc);
-                }
 
                 card.appendChild(body);
                 grid.appendChild(card);
