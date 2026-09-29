@@ -55,6 +55,13 @@
                     }, 2000);
                 }
             });
+            // 收起状态下点击图标：立即跳转，并取消待执行的自动展开/收起，避免侧栏跳动
+            bar.addEventListener('click', function(e) {
+                var a = e.target && e.target.closest ? e.target.closest('a') : null;
+                if (!a) return;
+                if (hoverTimer) { clearTimeout(hoverTimer); hoverTimer = null; }
+                if (leaveTimer) { clearTimeout(leaveTimer); leaveTimer = null; }
+            });
         });
     })();
     </script>
@@ -127,26 +134,53 @@
             font-family: "Noto Serif SC","Source Han Serif SC","Songti SC","STSong","Microsoft YaHei","微软雅黑",sans-serif;
             font-style: italic;
             margin-bottom: 6px;
-            display: block;
+            display: flex;
+            align-items: center;
+            gap: 10px;
             padding: 4px 0 4px 8px;
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis;
-            opacity: 1;
-            transform: translateX(0);
-            transition: color 0.2s ease,
-                        opacity 0.3s ease,
-                        transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+            transition: color 0.2s ease, gap 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                        padding 0.42s cubic-bezier(0.22, 1, 0.36, 1);
         }
         #quick-bar a:hover {
             color: #00838f;
         }
+        .quick-link-ico {
+            width: 22px;
+            height: 22px;
+            flex: 0 0 22px;
+            display: block;
+        }
+        .quick-link-text {
+            display: inline-block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            opacity: 1;
+            max-width: 160px;
+            transform: translateX(0);
+            transition: opacity 0.3s ease,
+                        max-width 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                        transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        /* 收起时：隐藏文字，只留图标并居中（图标可直接点击跳转） */
         #quick-bar.closed a {
+            justify-content: center;
+            gap: 0;
+            padding-left: 0;
+            padding-right: 0;
+            cursor: pointer;
+            border-radius: 10px;
+        }
+        #quick-bar.closed a:hover {
+            background: rgba(0,151,167,0.10);
+        }
+        #quick-bar.closed .quick-link-text {
             opacity: 0;
-            transform: translateX(-12px);
-            pointer-events: none;
-            transition: color 0.2s ease,
-                        opacity 0.18s ease,
+            max-width: 0;
+            transform: translateX(-8px);
+            transition: opacity 0.18s ease,
+                        max-width 0.3s ease,
                         transform 0.3s ease;
         }
         /* 融合的三条杠按钮样式 */
@@ -211,6 +245,11 @@
             .quick-bar-icon-bar {
                 width: 16px;
                 height: 2px;
+            }
+            .quick-link-ico {
+                width: 20px;
+                height: 20px;
+                flex: 0 0 20px;
             }
             main { padding: 24px 3vw 160px; }
             .welcome-img { width: 90vw; }
@@ -843,10 +882,22 @@
                 <span class="quick-bar-icon-bar"></span>
             </span>
         </div>
-        <a href="/" onclick="return navTo(event,'home')">首页</a>
-        <a href="/data" onclick="return navTo(event,'data')">数据中心</a>
-        <a href="/delta" onclick="return navTo(event,'delta')">三角洲每日密码</a>
-        <a href="/music" onclick="return navTo(event,'music')">音乐解析</a>
+        <a href="/" onclick="return navTo(event,'home')" title="首页">
+            <img class="quick-link-ico" draggable="false" src="res/icons/home.svg" alt="">
+            <span class="quick-link-text">首页</span>
+        </a>
+        <a href="/data" onclick="return navTo(event,'data')" title="数据中心">
+            <img class="quick-link-ico" draggable="false" src="res/icons/data.svg" alt="">
+            <span class="quick-link-text">数据中心</span>
+        </a>
+        <a href="/delta" onclick="return navTo(event,'delta')" title="三角洲每日密码">
+            <img class="quick-link-ico" draggable="false" src="res/icons/game.png" alt="">
+            <span class="quick-link-text">三角洲每日密码</span>
+        </a>
+        <a href="/music" onclick="return navTo(event,'music')" title="音乐解析">
+            <img class="quick-link-ico" draggable="false" src="res/icons/music.svg" alt="">
+            <span class="quick-link-text">音乐解析</span>
+        </a>
     </div>
     <!-- 全局静态背景（纯 CSS 渐变，无额外请求，加载更快） -->
     <div id="globalBg" aria-hidden="true"></div>
