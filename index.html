@@ -1530,18 +1530,11 @@
                 });
         }
 
-        // 进入网站即后台懒加载今日密码；并按系统时间每个整点刷新一次（00:00、01:00 …）
-        function scheduleDeltaAutoRefresh() {
+        // 进入网站即空闲时读取今日密码（更新由后端每小时定时任务完成，前端只读）
+        function warmDeltaSecrets() {
             var warm = function () { loadDeltaSecrets(false); };
             if (window.requestIdleCallback) window.requestIdleCallback(warm, { timeout: 3000 });
             else setTimeout(warm, 800);
-
-            var now = new Date();
-            var msToNextHour = (60 - now.getMinutes()) * 60000 - now.getSeconds() * 1000 - now.getMilliseconds();
-            setTimeout(function () {
-                loadDeltaSecrets(true);
-                setInterval(function () { loadDeltaSecrets(true); }, 3600000);
-            }, msToNextHour);
         }
 
         function showDeltaPage() {
@@ -1936,7 +1929,7 @@
                 mainContent.style.display = 'block';
             }
             preloadMapImages();
-            scheduleDeltaAutoRefresh();
+            warmDeltaSecrets();
             showMainContent();
         });
 

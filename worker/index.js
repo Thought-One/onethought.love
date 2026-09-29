@@ -4,7 +4,7 @@ import { onRequestGet as session } from './lib/session.js';
 import { onRequestGet as filesGet, onRequestPost as filesPost, onRequestPatch as filesPatch, onRequestDelete as filesDelete } from './lib/files.js';
 import { onRequestGet as foldersGet, onRequestPost as foldersPost, onRequestPatch as foldersPatch, onRequestDelete as foldersDelete } from './lib/folders.js';
 import { onRequestGet as noticeGet, onRequestPut as noticePut } from './lib/notice.js';
-import { onRequestGet as deltaGet } from './lib/delta.js';
+import { onRequestGet as deltaGet, refreshDeltaSecrets } from './lib/delta.js';
 import { onRequestGet as musicGet } from './lib/music.js';
 import { serveDownload } from './lib/download.js';
 
@@ -52,5 +52,10 @@ export default {
     }
 
     return env.ASSETS.fetch(request);
+  },
+
+  // Cloudflare Cron：每小时后端更新每日密码并写入文件
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(refreshDeltaSecrets(env));
   },
 };
