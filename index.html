@@ -9,6 +9,7 @@
     <link rel="dns-prefetch" href="https://v1.hitokoto.cn">
     <link rel="preconnect" href="https://img.71acg.net" crossorigin>
     <link rel="dns-prefetch" href="https://img.71acg.net">
+    <script src="/res/md.js"></script>
     <script>
     // 提前发起一言请求（页面解析阶段就请求，进入主页时通常已就绪）
     window.__hitokotoPromise = fetch('https://v1.hitokoto.cn/?encode=json', { cache: 'no-store' })
@@ -782,6 +783,28 @@
             font-size: 1.03em;
             line-height: 1.7;
         }
+        /* 公告 Markdown 排版 */
+        .notice-card .md-p { margin: 0 0 8px; }
+        .notice-card .md-p:last-child { margin-bottom: 0; }
+        .notice-card .md-h1, .notice-card .md-h2, .notice-card .md-h3,
+        .notice-card .md-h4, .notice-card .md-h5, .notice-card .md-h6 { margin: 6px 0; line-height: 1.4; }
+        .notice-card .md-h1 { font-size: 1.5em; }
+        .notice-card .md-h2 { font-size: 1.3em; }
+        .notice-card .md-h3 { font-size: 1.15em; }
+        .notice-card .md-ul, .notice-card .md-ol { display: inline-block; text-align: left; margin: 6px 0; padding-left: 1.4em; }
+        .notice-card .md-quote {
+            margin: 6px 0; padding: 4px 12px; text-align: left;
+            border-left: 3px solid var(--accent); color: var(--muted);
+        }
+        .notice-card .md-hr { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+        .notice-card .md-code { background: rgba(0,151,167,0.12); padding: 1px 5px; border-radius: 6px; font-size: 0.9em; }
+        .notice-card .md-pre {
+            background: rgba(0,40,44,0.06); border: 1px solid var(--border);
+            border-radius: 10px; padding: 10px 12px; margin: 8px 0; overflow-x: auto; text-align: left;
+        }
+        .notice-card .md-pre code { background: none; padding: 0; font-size: 0.88em; }
+        .notice-card .md-a { color: var(--brand); }
+        .notice-card .md-img { max-width: 100%; border-radius: 10px; }
 
         @media (max-width: 600px) {
             .dc-shell { margin: 18px auto 40px; padding: 20px 16px; border-radius: 14px; }
@@ -982,6 +1005,13 @@
             localStorage.removeItem('announcement_shown');
         });
 
+        // 公告内容渲染：支持 Markdown（标题/加粗/斜体/列表/引用/链接/换行等）+ 少量安全 HTML
+        function setNoticeContent(box, content) {
+            var raw = String(content == null ? '' : content);
+            if (window.renderMiniMarkdown) box.innerHTML = window.renderMiniMarkdown(raw);
+            else box.textContent = raw;
+        }
+
         // 公告数据动态加载：优先后台接口，失败后回退到静态文件
         function loadNoticeBox() {
             var box = document.getElementById('noticeBox');
@@ -989,12 +1019,12 @@
             fetch('api/notice')
                 .then(function(r){ if (!r.ok) throw new Error('api unavailable'); return r.json(); })
                 .then(function(data){
-                    if (data && data.content) box.textContent = data.content;
+                    if (data && data.content) setNoticeContent(box, data.content);
                     else return Promise.reject(new Error('empty'));
                 })
                 .catch(function(){
                     return fetch('files/notice.json').then(function(r){ return r.json(); }).then(function(data){
-                        if (data && data.content) box.textContent = data.content;
+                        if (data && data.content) setNoticeContent(box, data.content);
                     });
                 })
                 .catch(function(){

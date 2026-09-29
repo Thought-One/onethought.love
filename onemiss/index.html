@@ -106,7 +106,30 @@
     box-shadow: 0 0 0 4px rgba(0,188,212,0.16);
   }
   textarea { resize: vertical; min-height: 90px; }
+  textarea.notice-editor { min-height: 180px; font-family: ui-monospace, Consolas, "Courier New", monospace; line-height: 1.65; }
   select { cursor: pointer; }
+
+  /* 公告 Markdown 预览 */
+  .notice-preview {
+    margin-top: 6px; padding: 14px 16px; min-height: 42px;
+    border: 1px dashed var(--border); border-radius: var(--radius-sm);
+    background: rgba(255,255,255,0.72); line-height: 1.7; word-break: break-word;
+  }
+  .notice-preview .md-p { margin: 0 0 8px; }
+  .notice-preview .md-p:last-child { margin-bottom: 0; }
+  .notice-preview .md-h1, .notice-preview .md-h2, .notice-preview .md-h3,
+  .notice-preview .md-h4, .notice-preview .md-h5, .notice-preview .md-h6 { margin: 8px 0 4px; line-height: 1.4; }
+  .notice-preview .md-h1 { font-size: 1.5em; }
+  .notice-preview .md-h2 { font-size: 1.3em; }
+  .notice-preview .md-h3 { font-size: 1.15em; }
+  .notice-preview .md-ul, .notice-preview .md-ol { margin: 6px 0; padding-left: 1.5em; }
+  .notice-preview .md-quote { margin: 6px 0; padding: 4px 12px; border-left: 3px solid var(--accent); color: var(--muted); }
+  .notice-preview .md-hr { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+  .notice-preview .md-code { background: rgba(0,151,167,0.12); padding: 1px 5px; border-radius: 6px; font-size: 0.9em; }
+  .notice-preview .md-pre { background: rgba(0,151,167,0.08); border-radius: 10px; padding: 10px 12px; overflow-x: auto; }
+  .notice-preview .md-pre code { background: none; padding: 0; }
+  .notice-preview .md-img { max-width: 100%; border-radius: 8px; }
+  .notice-preview .md-a { color: var(--brand); }
 
   button {
     background: linear-gradient(135deg, var(--accent), var(--brand));
@@ -323,12 +346,18 @@
 
       <section class="module hidden" id="module-notice">
         <h2>公告管理</h2>
-        <label for="notice">公告内容</label>
-        <textarea id="notice" placeholder="输入要展示在首页的公告内容"></textarea>
+        <label for="notice">公告内容（支持 Markdown）</label>
+        <textarea id="notice" class="notice-editor" placeholder="输入要展示在首页的公告内容，支持 Markdown"></textarea>
+        <div class="hint">
+          支持 Markdown：<code># 标题</code>（字号随级别变化）、<code>**加粗**</code>、<code>*斜体*</code>、<code>~~删除线~~</code>、<code>`代码`</code>、<code>- 列表</code>、<code>&gt; 引用</code>、<code>--- 分割线</code>、<code>[链接](https://…)</code>；直接换行即换行。
+          也可用 HTML 自定义：<code>&lt;span style="font-size:20px;font-weight:bold"&gt;文字&lt;/span&gt;</code>、<code>&lt;big&gt;</code>、<code>&lt;small&gt;</code>、<code>&lt;br&gt;</code>。
+        </div>
         <div class="actions">
           <button id="saveNoticeBtn">保存公告</button>
           <span class="msg" id="noticeMsg"></span>
         </div>
+        <label>预览</label>
+        <div class="notice-preview" id="noticePreview"></div>
       </section>
 
       <section class="module hidden" id="module-upload">
@@ -390,6 +419,7 @@
   </div>
 </div>
 
+<script src="/res/md.js"></script>
 <script>
 (function () {
   var state = { files: [], folders: [], selected: null, configured: false, keyword: '' };
@@ -821,9 +851,24 @@
     });
   }
 
+  function updateNoticePreview() {
+    var box = $('noticePreview');
+    var area = $('notice');
+    if (!box || !area) return;
+    var raw = area.value || '';
+    if (window.renderMiniMarkdown) {
+      box.innerHTML = raw.trim()
+        ? window.renderMiniMarkdown(raw)
+        : '<span style="color:#9db7bd">（暂无内容）</span>';
+    } else {
+      box.textContent = raw;
+    }
+  }
+
   function loadNotice() {
     return api('/api/notice').then(function (data) {
       $('notice').value = (data && data.content) || '';
+      updateNoticePreview();
     }).catch(function (err) {
       setMsg($('noticeMsg'), err.message, false);
     });
@@ -932,6 +977,8 @@
   $('password').addEventListener('keydown', function (e) {
     if (e.key === 'Enter') $('loginBtn').click();
   });
+
+  $('notice').addEventListener('input', updateNoticePreview);
 
   $('saveNoticeBtn').onclick = function () {
     var btn = $('saveNoticeBtn');
