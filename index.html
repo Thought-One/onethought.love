@@ -829,10 +829,10 @@
                 <span class="quick-bar-icon-bar"></span>
             </span>
         </div>
-        <a href="#/home">首页</a>
-        <a href="#/data">数据中心</a>
-        <a href="#/delta">三角洲每日密码</a>
-        <a href="#/music">音乐解析</a>
+        <a href="/" onclick="return navTo(event,'home')">首页</a>
+        <a href="/data" onclick="return navTo(event,'data')">数据中心</a>
+        <a href="/delta" onclick="return navTo(event,'delta')">三角洲每日密码</a>
+        <a href="/music" onclick="return navTo(event,'music')">音乐解析</a>
     </div>
     <!-- 全局静态背景（纯 CSS 渐变，无额外请求，加载更快） -->
     <div id="globalBg" aria-hidden="true"></div>
@@ -1582,7 +1582,7 @@
             if (input) setTimeout(function () { input.focus(); }, 60);
         }
 
-        // ===== 视图路由：每个分区一个子分页（#/home、#/data、#/delta、#/music），刷新保持当前页 =====
+        // ===== 视图路由：每个分区一个干净子分页（/、/data、/delta、/music），无 # 号，刷新保持当前页 =====
         var VIEW_HANDLERS = {
             home: showMainContent,
             data: showDataCenter,
@@ -1591,28 +1591,43 @@
         };
         var currentView = '';
 
+        function viewPath(view) { return view === 'home' ? '/' : '/' + view; }
+
+        function viewFromPath() {
+            var p = (location.pathname || '/').replace(/\/+$/, '');
+            if (p === '' || p === '/' || p === '/index.html' || p === '/home') return 'home';
+            var seg = p.split('/').pop();
+            return VIEW_HANDLERS[seg] ? seg : 'home';
+        }
+
         function goto(view, push) {
             if (!VIEW_HANDLERS[view]) view = 'home';
             if (currentView === view) return;
             currentView = view;
             VIEW_HANDLERS[view]();
-            var hash = '#/' + view;
-            if (location.hash !== hash) {
+            var path = viewPath(view);
+            if (location.pathname !== path) {
                 try {
-                    if (push === false) history.replaceState(null, '', hash);
-                    else location.hash = hash; // 生成历史记录，支持浏览器后退
-                } catch (e) {
-                    location.hash = hash;
-                }
+                    if (push === false) history.replaceState(null, '', path);
+                    else history.pushState(null, '', path); // 生成历史记录，支持浏览器前进/后退
+                } catch (e) { /* 忽略 */ }
             }
         }
 
-        function applyHash() {
-            var view = (location.hash || '').replace(/^#\/?/, '').trim() || 'home';
-            goto(view, false);
+        // 侧栏链接：普通点击走 SPA，按住 Ctrl/⌘/中键则新标签打开
+        function navTo(e, view) {
+            if (e && (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1)) return true;
+            if (e && e.preventDefault) e.preventDefault();
+            goto(view);
+            return false;
         }
 
-        window.addEventListener('hashchange', applyHash);
+        function applyPath() { goto(viewFromPath(), false); }
+
+        window.addEventListener('popstate', function () {
+            currentView = '';
+            applyPath();
+        });
 
         function parseMusic() {
             var input = document.getElementById('musicInput');
@@ -1962,7 +1977,7 @@
             }
             preloadMapImages();
             warmDeltaSecrets();
-            applyHash();
+            applyPath();
         });
 
         // 快捷栏展开/关闭：仅切换 class，由 CSS 过渡负责动画

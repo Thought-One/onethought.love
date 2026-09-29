@@ -51,6 +51,11 @@ export default {
       return env.ASSETS.fetch(new URL('/onemiss/index.html', url));
     }
 
+    // 干净子分页（无 # 号）：刷新/直链时回退到单页入口
+    if (path === '/home' || path === '/data' || path === '/delta' || path === '/music') {
+      return env.ASSETS.fetch(new URL('/index.html', url));
+    }
+
     return env.ASSETS.fetch(request);
   },
 
