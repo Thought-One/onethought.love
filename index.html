@@ -784,17 +784,18 @@
             line-height: 1.7;
         }
         /* 公告 Markdown 排版 */
-        .notice-card .md-p { margin: 0 0 8px; }
+        .notice-card .md-p { margin: 0 0 8px; white-space: pre-wrap; }
         .notice-card .md-p:last-child { margin-bottom: 0; }
         .notice-card .md-h1, .notice-card .md-h2, .notice-card .md-h3,
-        .notice-card .md-h4, .notice-card .md-h5, .notice-card .md-h6 { margin: 6px 0; line-height: 1.4; }
+        .notice-card .md-h4, .notice-card .md-h5, .notice-card .md-h6 { margin: 6px 0; line-height: 1.4; white-space: pre-wrap; }
         .notice-card .md-h1 { font-size: 1.5em; }
         .notice-card .md-h2 { font-size: 1.3em; }
         .notice-card .md-h3 { font-size: 1.15em; }
         .notice-card .md-ul, .notice-card .md-ol { display: inline-block; text-align: left; margin: 6px 0; padding-left: 1.4em; }
+        .notice-card .md-ul li, .notice-card .md-ol li { white-space: pre-wrap; }
         .notice-card .md-quote {
             margin: 6px 0; padding: 4px 12px; text-align: left;
-            border-left: 3px solid var(--accent); color: var(--muted);
+            border-left: 3px solid var(--accent); color: var(--muted); white-space: pre-wrap;
         }
         .notice-card .md-hr { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
         .notice-card .md-code { background: rgba(0,151,167,0.12); padding: 1px 5px; border-radius: 6px; font-size: 0.9em; }

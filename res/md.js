@@ -108,9 +108,10 @@
         var list = null;
         var para = [];
 
+        // 段落内保留换行（配合容器 white-space: pre-wrap，输入的空格/空行都会原样显示）
         function flushPara() {
             if (para.length) {
-                out.push('<p class="md-p">' + para.map(inline).join('<br>') + '</p>');
+                out.push('<p class="md-p">' + para.map(inline).join('\n') + '</p>');
                 para = [];
             }
         }

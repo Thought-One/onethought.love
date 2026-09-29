@@ -115,10 +115,21 @@
     border: 1px dashed var(--border); border-radius: var(--radius-sm);
     background: rgba(255,255,255,0.72); line-height: 1.7; word-break: break-word;
   }
-  .notice-preview .md-p { margin: 0 0 8px; }
+  .notice-preview .md-p { margin: 0 0 8px; white-space: pre-wrap; }
   .notice-preview .md-p:last-child { margin-bottom: 0; }
   .notice-preview .md-h1, .notice-preview .md-h2, .notice-preview .md-h3,
-  .notice-preview .md-h4, .notice-preview .md-h5, .notice-preview .md-h6 { margin: 8px 0 4px; line-height: 1.4; }
+  .notice-preview .md-h4, .notice-preview .md-h5, .notice-preview .md-h6 { margin: 8px 0 4px; line-height: 1.4; white-space: pre-wrap; }
+  .notice-preview .md-ul li, .notice-preview .md-ol li { white-space: pre-wrap; }
+  .notice-preview .md-quote { white-space: pre-wrap; }
+
+  /* 公告 Markdown 工具栏 */
+  .md-toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 10px; }
+  .md-toolbar button {
+    padding: 6px 12px; font-size: 0.85em; font-weight: 600; border-radius: 8px;
+    background: rgba(0,151,167,0.10); color: var(--brand-strong); box-shadow: none;
+  }
+  .md-toolbar button:hover { background: rgba(0,188,212,0.22); transform: translateY(-1px); box-shadow: none; }
+  .md-toolbar .md-sep { width: 1px; align-self: stretch; margin: 2px 1px; background: var(--border); }
   .notice-preview .md-h1 { font-size: 1.5em; }
   .notice-preview .md-h2 { font-size: 1.3em; }
   .notice-preview .md-h3 { font-size: 1.15em; }
@@ -347,6 +358,27 @@
       <section class="module hidden" id="module-notice">
         <h2>公告管理</h2>
         <label for="notice">公告内容（支持 Markdown）</label>
+        <div class="md-toolbar" id="mdToolbar">
+          <button type="button" data-md="h1">H1</button>
+          <button type="button" data-md="h2">H2</button>
+          <button type="button" data-md="h3">H3</button>
+          <span class="md-sep"></span>
+          <button type="button" data-md="bold">加粗</button>
+          <button type="button" data-md="italic">斜体</button>
+          <button type="button" data-md="strike">删除线</button>
+          <button type="button" data-md="code">代码</button>
+          <span class="md-sep"></span>
+          <button type="button" data-md="ul">列表</button>
+          <button type="button" data-md="ol">数字</button>
+          <button type="button" data-md="quote">引用</button>
+          <button type="button" data-md="hr">分割线</button>
+          <button type="button" data-md="codeblock">代码块</button>
+          <span class="md-sep"></span>
+          <button type="button" data-md="link">链接</button>
+          <button type="button" data-md="image">图片</button>
+          <button type="button" data-md="size">字号</button>
+          <button type="button" data-md="space">空格</button>
+        </div>
         <textarea id="notice" class="notice-editor" placeholder="输入要展示在首页的公告内容，支持 Markdown"></textarea>
         <div class="hint">
           支持 Markdown：<code># 标题</code>（字号随级别变化）、<code>**加粗**</code>、<code>*斜体*</code>、<code>~~删除线~~</code>、<code>`代码`</code>、<code>- 列表</code>、<code>&gt; 引用</code>、<code>--- 分割线</code>、<code>[链接](https://…)</code>；直接换行即换行。
@@ -848,6 +880,119 @@
       updateStats();
     }).catch(function (err) {
       setMsg($('listMsg'), err.message, false);
+    });
+  }
+
+  // ===== 公告 Markdown 工具栏：一键插入语法 =====
+  function mdSel(area) {
+    try { return { start: area.selectionStart, end: area.selectionEnd }; }
+    catch (e) { return { start: area.value.length, end: area.value.length }; }
+  }
+
+  function mdSelect(area, start, end) {
+    try { area.focus(); area.selectionStart = start; area.selectionEnd = end; } catch (e) {}
+  }
+
+  // 在光标处插入文本
+  function mdInsert(text) {
+    var area = $('notice');
+    var s = mdSel(area);
+    area.value = area.value.slice(0, s.start) + text + area.value.slice(s.end);
+    var pos = s.start + text.length;
+    mdSelect(area, pos, pos);
+    updateNoticePreview();
+  }
+
+  // 用 open/close 包裹选中内容（无选中则插入占位文字并选中）
+  function mdWrap(open, close, placeholder) {
+    var area = $('notice');
+    var s = mdSel(area);
+    var val = area.value;
+    var text = val.slice(s.start, s.end);
+    if (!text) text = placeholder == null ? '文字' : placeholder;
+    var ins = open + text + close;
+    area.value = val.slice(0, s.start) + ins + val.slice(s.end);
+    mdSelect(area, s.start + open.length, s.start + open.length + text.length);
+    updateNoticePreview();
+  }
+
+  // 给选区所在的每一行加前缀（标题/列表/引用）
+  function mdPrefix(prefix) {
+    var area = $('notice');
+    var s = mdSel(area);
+    var val = area.value;
+    var lineStart = val.lastIndexOf('\n', s.start - 1) + 1;
+    var lineEnd = val.indexOf('\n', s.end);
+    if (lineEnd < 0) lineEnd = val.length;
+    var ins = val.slice(lineStart, lineEnd).split('\n').map(function (l) {
+      return l.indexOf(prefix) === 0 ? l : prefix + l;
+    }).join('\n');
+    area.value = val.slice(0, lineStart) + ins + val.slice(lineEnd);
+    mdSelect(area, lineStart, lineStart + ins.length);
+    updateNoticePreview();
+  }
+
+  // 整块插入（独占一行）
+  function mdBlock(text) {
+    var area = $('notice');
+    var s = mdSel(area);
+    var val = area.value;
+    var pre = (s.start > 0 && val.charAt(s.start - 1) !== '\n') ? '\n' : '';
+    var post = (s.end < val.length && val.charAt(s.end) !== '\n') ? '\n' : '';
+    var pos = s.start + pre.length + text.length;
+    area.value = val.slice(0, s.start) + pre + text + post + val.slice(s.end);
+    mdSelect(area, pos, pos);
+    updateNoticePreview();
+  }
+
+  // 插入链接/图片：把选中文字作为显示文字，光标落到网址处
+  function mdLink(image) {
+    var area = $('notice');
+    var s = mdSel(area);
+    var val = area.value;
+    var text = val.slice(s.start, s.end) || (image ? '说明' : '链接文字');
+    var ins = (image ? '![' : '[') + text + '](https://)';
+    area.value = val.slice(0, s.start) + ins + val.slice(s.end);
+    var urlPos = s.start + (image ? 2 : 1) + text.length + 2;
+    mdSelect(area, urlPos, urlPos + 'https://'.length);
+    updateNoticePreview();
+  }
+
+  function mdSize() {
+    var v = window.prompt('请输入字号（如 20，也可写 1.5em / 120%）', '20');
+    if (v == null) return;
+    v = String(v).replace(/\s+/g, '');
+    if (!/^\d*\.?\d+(px|em|rem|%)?$/.test(v)) v = '20px';
+    else if (!/(px|em|rem|%)$/.test(v)) v += 'px';
+    mdWrap('<span style="font-size:' + v + '">', '</span>', '文字');
+  }
+
+  function applyMd(kind) {
+    switch (kind) {
+      case 'h1': return mdPrefix('# ');
+      case 'h2': return mdPrefix('## ');
+      case 'h3': return mdPrefix('### ');
+      case 'bold': return mdWrap('**', '**', '加粗文字');
+      case 'italic': return mdWrap('*', '*', '斜体文字');
+      case 'strike': return mdWrap('~~', '~~', '删除文字');
+      case 'code': return mdWrap('`', '`', '代码');
+      case 'ul': return mdPrefix('- ');
+      case 'ol': return mdPrefix('1. ');
+      case 'quote': return mdPrefix('> ');
+      case 'hr': return mdBlock('---');
+      case 'codeblock': return mdBlock('```\n代码\n```');
+      case 'link': return mdLink(false);
+      case 'image': return mdLink(true);
+      case 'size': return mdSize();
+      case 'space': return mdInsert('\u3000');
+    }
+  }
+
+  var mdToolbar = $('mdToolbar');
+  if (mdToolbar) {
+    mdToolbar.addEventListener('click', function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest('button[data-md]') : null;
+      if (btn) applyMd(btn.getAttribute('data-md'));
     });
   }
 
