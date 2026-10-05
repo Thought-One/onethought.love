@@ -186,64 +186,64 @@
         /* 侧栏底部用户区：头像 + 昵称，点击进入“我的” */
         .quick-user {
             margin-top: auto;
+            margin-bottom: 28px;            /* 向上移动，避免贴底被裁 */
             display: flex;
+            flex-direction: column;          /* 头像在上、昵称在下 */
             align-items: center;
-            gap: 10px;
-            padding: 6px 0 6px 8px;
+            gap: 8px;
+            padding: 6px 4px;
             text-decoration: none;
             color: #0097a7;
             font-style: italic;
             font-family: "Noto Serif SC","Source Han Serif SC","Songti SC","STSong","Microsoft YaHei","微软雅黑",sans-serif;
             border-radius: 12px;
-            white-space: nowrap;
             overflow: hidden;
             transition: gap 0.42s cubic-bezier(0.22, 1, 0.36, 1),
-                        padding 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                        margin 0.42s ease,
                         background 0.2s ease;
         }
         .quick-user:hover { background: rgba(0,151,167,0.08); }
         .quick-user-avatar {
             width: 100px;
             height: 100px;
-            flex: 0 0 100px;
+            flex: 0 0 auto;
             border-radius: 50%;
-            object-fit: cover;
+            object-fit: cover;               /* 等比裁切，形状不变 */
             background: rgba(255,255,255,0.7);
             border: 2px solid rgba(0,151,167,0.35);
             padding: 1px;
             box-sizing: border-box;
+            transition: width 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                        height 0.42s cubic-bezier(0.22, 1, 0.36, 1);
         }
         .quick-user-name {
-            display: inline-block;
-            max-width: 150px;
+            display: block;
+            max-width: 100%;
             overflow: hidden;
             text-overflow: ellipsis;
+            white-space: nowrap;
+            line-height: 1.2;
+            font-size: 0.95em;
             opacity: 1;
-            transition: opacity 0.3s ease, max-width 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+            transition: opacity 0.3s ease;
         }
-        /* 打开时：大头像在上、昵称在下 */
-        #quick-bar:not(.closed) .quick-user {
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 0 4px 0;
-        }
-        /* 收起时：缩小头像，保持窄栏 */
-        #quick-bar.closed .quick-user-avatar {
-            width: 44px;
-            height: 44px;
-            flex: 0 0 44px;
-        }
+        /* 收起时：头像等比缩小，昵称隐藏 */
         #quick-bar.closed .quick-user {
-            justify-content: center;
+            margin-bottom: 14px;
             gap: 0;
             padding-left: 0;
             padding-right: 0;
         }
+        #quick-bar.closed .quick-user-avatar {
+            width: 46px;
+            height: 46px;
+        }
         #quick-bar.closed .quick-user-name {
             opacity: 0;
             max-width: 0;
-            transition: opacity 0.18s ease, max-width 0.3s ease;
+            height: 0;
+            overflow: hidden;
+            transition: opacity 0.18s ease;
         }
         /* 融合的三条杠按钮样式 */
         .quick-bar-toggle-inner {
