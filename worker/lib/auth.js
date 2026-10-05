@@ -74,17 +74,6 @@ export function safeEqual(a, b) {
   return result === 0;
 }
 
-export function readCookie(request, name) {
-  const header = request.headers.get('Cookie') || '';
-  const safeName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const match = header.match(new RegExp(`(?:^|;\\s*)${safeName}=([^;]*)`));
-  return match ? decodeURIComponent(match[1]) : null;
-}
-
-export function sessionCookie(token, maxAgeSeconds = DEFAULT_MAX_AGE) {
-  return `${SESSION_COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${maxAgeSeconds}`;
-}
-
 export function clearSessionCookie() {
   return `${SESSION_COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0`;
 }

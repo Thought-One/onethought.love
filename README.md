@@ -8,19 +8,33 @@
 
 ```
 浏览器
-  ├─ index.html        公开站点：读 api/files 渲染下载列表、读 api/notice 显示公告
-  ├─ onemiss/          后台：登录后上传/删除文件、编辑公告（访问 /onemiss）
+  ├─ index.html        公开站点：首页(一言/公告)、数据中心、每日密码、音乐解析、我的(账号/资料)
+  ├─ res/md.js         公告 Markdown 渲染器（前台与后台共用）
+  ├─ onemiss/          后台：登录后上传/删除文件、文件夹分类、编辑公告（访问 /onemiss）
   ├─ worker/           Cloudflare Worker（免费 Serverless 后端）
   │    ├─ index.js     入口：/api/* 与 /download/* 交给后端，其余走静态资产
-  │    └─ lib/         login / logout / session / files / notice / download
-  │         ├─ b2.js   B2 的 S3 兼容接口封装（AWS Signature V4）
-  │         └─ auth.js HMAC 签名会话
-  ├─ wrangler.toml     Worker 与静态资产配置
+  │    └─ lib/         后端模块
+  │         ├─ b2.js         B2 的 S3 兼容接口封装（AWS Signature V4）
+  │         ├─ auth.js       HMAC 签名会话（管理员 / 用户令牌按 role 隔离）
+  │         ├─ http.js       统一 JSON 响应与工具
+  │         ├─ store.js      文件索引 / 文件夹定义（存 B2）
+  │         ├─ files.js      文件列表、上传、删除、重命名
+  │         ├─ folders.js    文件夹（分类）增删改
+  │         ├─ filetype.js   按扩展名推断图标类型
+  │         ├─ notice.js     公告读写
+  │         ├─ download.js   /download/* 从 B2 读取并代理下载
+  │         ├─ delta.js      每日密码（Cron 定时抓取并写入 B2）
+  │         ├─ music.js      网易云音乐解析代理
+  │         ├─ user.js       用户接口（注册 / 登录 / 资料 / 头像 / QQ）
+  │         └─ userdb.js     用户数据（Cloudflare KV）
+  ├─ wrangler.toml     Worker / 静态资产 / KV / Cron 配置
   ├─ .assetsignore     部署时排除的服务端文件
   └─ download/         B2 不可用时的静态兜底文件与 manifest.json
 ```
 
 `/onemiss` 由 Worker 重写到 `onemiss/index.html`；静态资源通过 `ASSETS` 绑定提供。
+前端为干净路径路由：`/`、`/data`、`/delta`、`/music`、`/me`（无 `#`，刷新保持当前页）。
+用户数据存 Cloudflare KV（绑定 `USER_KV`），不写入 B2。
 后端未部署时（如 GitHub Pages），站点会自动回退到 `download/manifest.json` 与 `files/notice.json`。
 
 ## 特殊功能：txt 链接
