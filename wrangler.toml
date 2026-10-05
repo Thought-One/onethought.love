@@ -12,13 +12,11 @@ binding = "ASSETS"
 not_found_handling = "single-page-application"
 run_worker_first = ["/api/*", "/download/*"]
 
-# ===== 用户系统（KV，免费、无需绑卡）=====
-# 1) Cloudflare 控制台 → Workers & Pages → KV → Create namespace（名字随意，如 onethought-users）
-# 2) 复制命名空间 ID，取消下面注释并把 <KV_ID> 换成真实 ID
-# 3) 重新部署即可启用；未配置时用户系统会提示“未配置”，其余功能不受影响
-# [[kv_namespaces]]
-# binding = "USER_KV"
-# id = "<KV_ID>"
+# ===== 用户系统：KV 存储（免费、无需绑卡）=====
+# 用户/验证码/头像都存放在这个 KV 命名空间（SUBSCRIPTIONS_KV），不写入 B2。
+[[kv_namespaces]]
+binding = "USER_KV"
+id = "a868d342f2ae4fe78f80858ca5067492"
 
 # 每小时后端自动更新每日密码并写入文件（B2 的 _config/df-secret.json）
 [triggers]
