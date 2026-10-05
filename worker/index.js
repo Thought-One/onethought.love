@@ -7,6 +7,15 @@ import { onRequestGet as noticeGet, onRequestPut as noticePut } from './lib/noti
 import { onRequestGet as deltaGet, refreshDeltaSecrets } from './lib/delta.js';
 import { onRequestGet as musicGet } from './lib/music.js';
 import { serveDownload } from './lib/download.js';
+import {
+  onConfig as userConfig,
+  onSendCode as userSendCode,
+  onVerify as userVerify,
+  onMe as userMe,
+  onQq as userQq,
+  onProfile as userProfile,
+  onAvatar as userAvatar,
+} from './lib/user.js';
 
 const ROUTES = {
   'POST /api/login': login,
@@ -24,6 +33,12 @@ const ROUTES = {
   'PUT /api/notice': noticePut,
   'GET /api/df-secret': deltaGet,
   'GET /api/wyy': musicGet,
+  'GET /api/user/config': userConfig,
+  'POST /api/user/send-code': userSendCode,
+  'POST /api/user/verify': userVerify,
+  'GET /api/user/me': userMe,
+  'POST /api/user/qq': userQq,
+  'POST /api/user/profile': userProfile,
 };
 
 export default {
@@ -32,6 +47,16 @@ export default {
     const path = url.pathname;
 
     if (path.startsWith('/api/')) {
+      // 头像按 uid 动态取：/api/user/avatar/:uid
+      if (request.method === 'GET' && path.startsWith('/api/user/avatar/')) {
+        let uid;
+        try {
+          uid = decodeURIComponent(path.slice('/api/user/avatar/'.length));
+        } catch (err) {
+          return new Response('Bad Request', { status: 400 });
+        }
+        return userAvatar({ request, env, uid });
+      }
       const handler = ROUTES[`${request.method} ${path}`];
       if (!handler) return new Response('Not Found', { status: 404 });
       return handler({ request, env });
@@ -52,7 +77,7 @@ export default {
     }
 
     // 干净子分页（无 # 号）：刷新/直链时回退到单页入口
-    if (path === '/home' || path === '/data' || path === '/delta' || path === '/music') {
+    if (path === '/home' || path === '/data' || path === '/delta' || path === '/music' || path === '/me') {
       return env.ASSETS.fetch(new URL('/index.html', url));
     }
 

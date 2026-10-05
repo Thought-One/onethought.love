@@ -183,6 +183,55 @@
                         max-width 0.3s ease,
                         transform 0.3s ease;
         }
+        /* 侧栏底部用户区：头像 + 昵称，点击进入“我的” */
+        .quick-user {
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 0 6px 8px;
+            text-decoration: none;
+            color: #0097a7;
+            font-style: italic;
+            font-family: "Noto Serif SC","Source Han Serif SC","Songti SC","STSong","Microsoft YaHei","微软雅黑",sans-serif;
+            border-radius: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            transition: gap 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                        padding 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                        background 0.2s ease;
+        }
+        .quick-user:hover { background: rgba(0,151,167,0.08); }
+        .quick-user-avatar {
+            width: 34px;
+            height: 34px;
+            flex: 0 0 34px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: rgba(255,255,255,0.7);
+            border: 2px solid rgba(0,151,167,0.35);
+            padding: 1px;
+            box-sizing: border-box;
+        }
+        .quick-user-name {
+            display: inline-block;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            opacity: 1;
+            transition: opacity 0.3s ease, max-width 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        #quick-bar.closed .quick-user {
+            justify-content: center;
+            gap: 0;
+            padding-left: 0;
+            padding-right: 0;
+        }
+        #quick-bar.closed .quick-user-name {
+            opacity: 0;
+            max-width: 0;
+            transition: opacity 0.18s ease, max-width 0.3s ease;
+        }
         /* 融合的三条杠按钮样式 */
         .quick-bar-toggle-inner {
             width: 44px;
@@ -846,6 +895,58 @@
         .notice-card .md-a { color: var(--brand); }
         .notice-card .md-img { max-width: 100%; border-radius: 10px; }
 
+        /* ===== 个人资料 / 登录 ===== */
+        .profile-shell { max-width: 560px; }
+        .auth-panel, .profile-panel { max-width: 420px; margin: 6px auto 0; }
+        .auth-panel label, .profile-panel label {
+            display: block; margin: 14px 0 6px; color: var(--muted); font-size: 0.92em;
+        }
+        .auth-panel input, .profile-panel input {
+            width: 100%; box-sizing: border-box; padding: 11px 13px;
+            border: 1px solid var(--border); border-radius: 12px;
+            font-size: 1em; font-family: inherit; color: var(--text-main);
+            background: rgba(255,255,255,0.85);
+        }
+        .auth-panel input:focus, .profile-panel input:focus {
+            outline: none; border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(0,188,212,0.16);
+        }
+        .auth-code-row { display: flex; gap: 10px; align-items: stretch; }
+        .auth-code-row input { flex: 1 1 auto; }
+        .auth-btn {
+            margin-top: 16px; width: 100%; padding: 11px 18px;
+            border: none; border-radius: 999px; cursor: pointer;
+            font-family: inherit; font-size: 1em; font-weight: 600; color: #fff;
+            background: linear-gradient(135deg, var(--accent), var(--brand));
+            box-shadow: 0 6px 16px rgba(0,151,167,0.24);
+            transition: transform 0.15s ease, filter 0.2s ease, opacity 0.2s ease;
+        }
+        .auth-btn:hover { transform: translateY(-1px); filter: brightness(1.04); }
+        .auth-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+        .auth-code-row .auth-btn { margin-top: 0; width: auto; white-space: nowrap; }
+        .auth-btn.ghost {
+            background: rgba(255,255,255,0.8); color: var(--brand);
+            border: 1px solid var(--border); box-shadow: none;
+        }
+        .turnstile-box { margin-top: 14px; display: flex; justify-content: center; }
+        .profile-avatar-row { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
+        .profile-avatar {
+            width: 84px; height: 84px; border-radius: 50%; object-fit: cover;
+            border: 3px solid rgba(0,151,167,0.35); background: rgba(255,255,255,0.7);
+        }
+        .profile-avatar-actions { display: flex; flex-direction: column; gap: 8px; }
+        .profile-file-btn {
+            display: inline-block; margin: 0; padding: 9px 18px; cursor: pointer;
+            border-radius: 999px; font-weight: 600; color: #fff;
+            background: linear-gradient(135deg, var(--accent), var(--brand));
+            box-shadow: 0 6px 16px rgba(0,151,167,0.24); text-align: center;
+        }
+        .profile-file-btn:hover { filter: brightness(1.04); }
+        .hint-inline { color: var(--muted); font-size: 0.8em; }
+        .profile-actions { display: flex; gap: 12px; }
+        .profile-actions .auth-btn { flex: 1 1 0; }
+        .auth-identity { text-align: center; color: var(--muted); font-size: 0.9em; margin: 4px 0 8px; }
+
         @media (max-width: 600px) {
             .dc-shell { margin: 18px auto 40px; padding: 20px 16px; border-radius: 14px; }
             .file-card { padding: 12px; gap: 11px; }
@@ -897,6 +998,11 @@
         <a href="/music" onclick="return navTo(event,'music')" title="音乐解析">
             <img class="quick-link-ico" draggable="false" src="res/icons/music.svg" alt="">
             <span class="quick-link-text">音乐解析</span>
+        </a>
+        <!-- 侧边栏底部：用户头像 + 昵称，点击进入个人资料页 -->
+        <a id="sideUser" class="quick-user" href="/me" onclick="return navTo(event,'me')" title="我的">
+            <img id="sideUserAvatar" class="quick-user-avatar" draggable="false" src="res/icons/user.svg" alt="">
+            <span id="sideUserName" class="quick-user-name">未登录</span>
         </a>
     </div>
     <!-- 全局静态背景（纯 CSS 渐变，无额外请求，加载更快） -->
@@ -971,6 +1077,53 @@
                 </div>
                 <div id="musicStatus" class="df-status"></div>
                 <div id="musicResult" class="music-result"></div>
+            </div>
+        </div>
+        <!-- 个人资料 / 邮箱验证码登录 -->
+        <div id="profilePage" class="main-content" style="display:none;">
+            <div class="dc-shell profile-shell">
+                <button class="back-btn" onclick="goto('home')">&#8592; 返回首页</button>
+                <div class="dc-head">
+                    <h2>我的</h2>
+                    <p class="dc-sub">邮箱验证码登录，管理昵称与头像</p>
+                </div>
+                <!-- 未登录：登录 / 注册 -->
+                <div id="authPanel" class="auth-panel">
+                    <label for="authEmail">邮箱</label>
+                    <input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com">
+                    <div class="auth-code-row">
+                        <input id="authCode" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="6 位验证码">
+                        <button type="button" class="auth-btn ghost" id="sendCodeBtn" onclick="sendUserCode()">获取验证码</button>
+                    </div>
+                    <div id="turnstileBox" class="turnstile-box" style="display:none;"></div>
+                    <div id="authMsg" class="df-status"></div>
+                    <button type="button" class="auth-btn" id="verifyBtn" onclick="verifyUserCode()">登录 / 注册</button>
+                </div>
+                <!-- 已登录：资料编辑 -->
+                <div id="profilePanel" class="profile-panel" style="display:none;">
+                    <div class="profile-avatar-row">
+                        <img id="profileAvatar" class="profile-avatar" src="res/icons/user.svg" alt="">
+                        <div class="profile-avatar-actions">
+                            <label class="profile-file-btn">
+                                上传头像
+                                <input type="file" id="avatarFile" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none;">
+                            </label>
+                            <span class="hint-inline">≤512KB，支持 PNG / JPG / WebP / GIF</span>
+                        </div>
+                    </div>
+                    <label for="profileName">昵称</label>
+                    <input id="profileName" type="text" maxlength="24" placeholder="设置一个昵称">
+                    <label for="profileQq">QQ 号（可拉取昵称与头像）</label>
+                    <div class="auth-code-row">
+                        <input id="profileQq" type="text" inputmode="numeric" maxlength="12" placeholder="例如 10001">
+                        <button type="button" class="auth-btn ghost" id="pullQqBtn" onclick="pullQqProfile()">拉取 QQ</button>
+                    </div>
+                    <div id="profileMsg" class="df-status"></div>
+                    <div class="profile-actions">
+                        <button type="button" class="auth-btn" id="saveProfileBtn" onclick="saveUserProfile()">保存资料</button>
+                        <button type="button" class="auth-btn ghost" id="logoutUserBtn" onclick="logoutUser()">退出登录</button>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -1192,6 +1345,7 @@
             var dataCenterPage = document.getElementById('dataCenterPage');
             var deltaPage = document.getElementById('deltaPage');
             var musicPage = document.getElementById('musicPage');
+            var profilePage = document.getElementById('profilePage');
             if (dataCenterPage) {
                 dataCenterPage.classList.remove('show');
                 dataCenterPage.style.display = 'none';
@@ -1203,6 +1357,10 @@
             if (musicPage) {
                 musicPage.classList.remove('show');
                 musicPage.style.display = 'none';
+            }
+            if (profilePage) {
+                profilePage.classList.remove('show');
+                profilePage.style.display = 'none';
             }
             if (mainContent) {
                 mainContent.classList.add('show');
@@ -1429,6 +1587,11 @@
                 musicPage.classList.remove('show');
                 musicPage.style.display = 'none';
             }
+            var profilePage = document.getElementById('profilePage');
+            if (profilePage) {
+                profilePage.classList.remove('show');
+                profilePage.style.display = 'none';
+            }
             if (dataCenterPage) {
                 dataCenterPage.classList.add('show');
                 dataCenterPage.style.display = 'block';
@@ -1603,7 +1766,7 @@
         }
 
         function showDeltaPage() {
-            ['mainContent', 'dataCenterPage', 'musicPage'].forEach(function (id) {
+            ['mainContent', 'dataCenterPage', 'musicPage', 'profilePage'].forEach(function (id) {
                 var el = document.getElementById(id);
                 if (el) { el.classList.remove('show'); el.style.display = 'none'; }
             });
@@ -1634,7 +1797,7 @@
         }
 
         function showMusicPage() {
-            ['mainContent', 'dataCenterPage', 'deltaPage'].forEach(function (id) {
+            ['mainContent', 'dataCenterPage', 'deltaPage', 'profilePage'].forEach(function (id) {
                 var el = document.getElementById(id);
                 if (el) { el.classList.remove('show'); el.style.display = 'none'; }
             });
@@ -1652,7 +1815,8 @@
             home: showMainContent,
             data: showDataCenter,
             delta: showDeltaPage,
-            music: showMusicPage
+            music: showMusicPage,
+            me: showProfilePage
         };
         var currentView = '';
 
@@ -2033,6 +2197,303 @@
             }
         }
 
+        // ===== 用户系统：邮箱验证码登录 / 资料与头像 =====
+        var USER_TOKEN_KEY = 'ot_user_token';
+        var userState = { config: null, user: null, avatarData: '', avatarUrl: '', tsPromise: null };
+        var turnstileToken = '';
+        var turnstileRendered = false;
+
+        function getUserToken() {
+            try { return localStorage.getItem(USER_TOKEN_KEY) || ''; } catch (e) { return ''; }
+        }
+        function setUserToken(t) {
+            try {
+                if (t) localStorage.setItem(USER_TOKEN_KEY, t);
+                else localStorage.removeItem(USER_TOKEN_KEY);
+            } catch (e) { /* 忽略 */ }
+        }
+
+        function userApi(path, options) {
+            options = options || {};
+            var headers = options.headers || {};
+            var token = getUserToken();
+            if (token) headers['Authorization'] = 'Bearer ' + token;
+            if (options.body && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
+            return fetch(path, {
+                method: options.method || 'GET',
+                headers: headers,
+                body: options.body,
+                cache: 'no-store'
+            }).then(function (r) {
+                return r.json().catch(function () { return {}; }).then(function (data) {
+                    return { ok: r.ok, status: r.status, data: data || {} };
+                });
+            });
+        }
+
+        function renderSideUser(user) {
+            var img = document.getElementById('sideUserAvatar');
+            var name = document.getElementById('sideUserName');
+            var a = document.getElementById('sideUser');
+            var label = (user && (user.name || user.email)) ? (user.name || user.email) : '未登录';
+            if (img) img.src = (user && user.avatar) ? user.avatar : 'res/icons/user.svg';
+            if (name) name.textContent = label;
+            if (a) a.title = (user && (user.name || user.email)) ? (user.name || user.email) : '登录 / 注册';
+        }
+
+        function setAuthMsg(text, isError) {
+            var el = document.getElementById('authMsg');
+            if (!el) return;
+            el.className = 'df-status' + (isError ? ' warn' : '');
+            el.textContent = text || '';
+        }
+        function setProfileMsg(text, isError) {
+            var el = document.getElementById('profileMsg');
+            if (!el) return;
+            el.className = 'df-status' + (isError ? ' warn' : '');
+            el.textContent = text || '';
+        }
+
+        function loadUserConfig(force) {
+            if (userState.config && !force) return Promise.resolve(userState.config);
+            return userApi('/api/user/config').then(function (res) {
+                userState.config = (res.ok && res.data) ? res.data : {};
+                return userState.config;
+            });
+        }
+
+        function loadCurrentUser() {
+            if (!getUserToken()) { renderSideUser(null); return; }
+            userApi('/api/user/me').then(function (res) {
+                if (res.ok && res.data && res.data.user) {
+                    userState.user = res.data.user;
+                } else {
+                    userState.user = null;
+                    setUserToken('');
+                }
+                renderSideUser(userState.user);
+                if (currentView === 'me') renderProfile();
+            });
+        }
+
+        function showProfilePage() {
+            ['mainContent', 'dataCenterPage', 'deltaPage', 'musicPage'].forEach(function (id) {
+                var el = document.getElementById(id);
+                if (el) { el.classList.remove('show'); el.style.display = 'none'; }
+            });
+            var page = document.getElementById('profilePage');
+            if (page) { page.classList.add('show'); page.style.display = 'block'; }
+            renderProfile();
+            loadUserConfig(false).then(function (cfg) {
+                if (cfg && cfg.kvReady === false) {
+                    setAuthMsg('用户系统尚未配置：请在 Cloudflare 创建 KV 命名空间并绑定为 USER_KV。', true);
+                }
+            });
+        }
+
+        function renderProfile() {
+            var authPanel = document.getElementById('authPanel');
+            var profilePanel = document.getElementById('profilePanel');
+            var logged = !!(userState.user);
+            if (authPanel) authPanel.style.display = logged ? 'none' : 'block';
+            if (profilePanel) profilePanel.style.display = logged ? 'block' : 'none';
+            if (logged) {
+                var u = userState.user;
+                var av = document.getElementById('profileAvatar');
+                if (av) av.src = u.avatar || 'res/icons/user.svg';
+                var nm = document.getElementById('profileName');
+                if (nm) nm.value = u.name || '';
+                var qq = document.getElementById('profileQq');
+                if (qq) qq.value = u.qq || '';
+            }
+            userState.avatarData = '';
+            userState.avatarUrl = '';
+        }
+
+        // —— Turnstile 真人验证（仅在注册时后端才强制） ——
+        function loadTurnstileScript() {
+            if (window.turnstile) return Promise.resolve();
+            if (userState.tsPromise) return userState.tsPromise;
+            userState.tsPromise = new Promise(function (resolve) {
+                var s = document.createElement('script');
+                s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+                s.async = true;
+                s.defer = true;
+                s.onload = function () { resolve(); };
+                s.onerror = function () { resolve(); };
+                document.head.appendChild(s);
+            });
+            return userState.tsPromise;
+        }
+
+        function showTurnstile() {
+            var box = document.getElementById('turnstileBox');
+            var key = userState.config && userState.config.turnstileSiteKey;
+            if (!box || !key) return;
+            box.style.display = 'flex';
+            if (turnstileRendered) return;
+            loadTurnstileScript().then(function () {
+                if (!window.turnstile || !box) return;
+                window.turnstile.render(box, {
+                    sitekey: key,
+                    callback: function (token) { turnstileToken = token; sendUserCode(); },
+                    'expired-callback': function () { turnstileToken = ''; },
+                    'error-callback': function () { turnstileToken = ''; }
+                });
+                turnstileRendered = true;
+            });
+        }
+
+        function sendUserCode() {
+            var emailEl = document.getElementById('authEmail');
+            var email = (emailEl ? emailEl.value : '').trim();
+            if (!email) { setAuthMsg('请输入邮箱', true); return; }
+            var btn = document.getElementById('sendCodeBtn');
+            if (btn) btn.disabled = true;
+            setAuthMsg('发送中…');
+            var body = { email: email };
+            if (turnstileToken) body.turnstileToken = turnstileToken;
+            userApi('/api/user/send-code', { method: 'POST', body: JSON.stringify(body) }).then(function (res) {
+                var data = res.data || {};
+                if (!res.ok) {
+                    if (data.needTurnstile) {
+                        showTurnstile();
+                        setAuthMsg(data.error || '请完成真人验证后再试', true);
+                    } else {
+                        setAuthMsg(data.error || '发送失败，请稍后重试', true);
+                    }
+                    return;
+                }
+                var msg;
+                if (data.sent) msg = '验证码已发送到邮箱，10 分钟内有效';
+                else if (data.devCode) msg = '开发模式：验证码为 ' + data.devCode + '（未配置邮件服务，仅供测试）';
+                else msg = '验证码已生成，请查看邮箱';
+                setAuthMsg(msg, false);
+                turnstileToken = '';
+                if (window.turnstile && turnstileRendered) {
+                    try { window.turnstile.reset(); } catch (e) { /* 忽略 */ }
+                }
+            }).catch(function () {
+                setAuthMsg('网络错误，请重试', true);
+            }).then(function () {
+                if (btn) btn.disabled = false;
+            });
+        }
+
+        function verifyUserCode() {
+            var emailEl = document.getElementById('authEmail');
+            var codeEl = document.getElementById('authCode');
+            var email = (emailEl ? emailEl.value : '').trim();
+            var code = (codeEl ? codeEl.value : '').trim();
+            if (!email) { setAuthMsg('请输入邮箱', true); return; }
+            if (!/^\d{6}$/.test(code)) { setAuthMsg('请输入 6 位数字验证码', true); return; }
+            var btn = document.getElementById('verifyBtn');
+            if (btn) btn.disabled = true;
+            setAuthMsg('验证中…');
+            userApi('/api/user/verify', { method: 'POST', body: JSON.stringify({ email: email, code: code }) }).then(function (res) {
+                var data = res.data || {};
+                if (!res.ok || !data.token) { setAuthMsg(data.error || '登录失败', true); return; }
+                setUserToken(data.token);
+                userState.user = data.user;
+                if (codeEl) codeEl.value = '';
+                setAuthMsg('登录成功', false);
+                renderSideUser(userState.user);
+                renderProfile();
+            }).catch(function () {
+                setAuthMsg('网络错误，请重试', true);
+            }).then(function () {
+                if (btn) btn.disabled = false;
+            });
+        }
+
+        function pullQqProfile() {
+            var qqEl = document.getElementById('profileQq');
+            var qq = (qqEl ? qqEl.value : '').trim();
+            if (!/^\d{5,12}$/.test(qq)) { setProfileMsg('请输入有效的 QQ 号', true); return; }
+            var btn = document.getElementById('pullQqBtn');
+            if (btn) btn.disabled = true;
+            setProfileMsg('正在拉取 QQ 资料…');
+            userApi('/api/user/qq', { method: 'POST', body: JSON.stringify({ qq: qq }) }).then(function (res) {
+                var data = res.data || {};
+                if (!res.ok) { setProfileMsg(data.error || '拉取失败', true); return; }
+                if (data.nickname) {
+                    var nm = document.getElementById('profileName');
+                    if (nm) nm.value = data.nickname;
+                }
+                if (data.avatar) {
+                    userState.avatarData = '';
+                    userState.avatarUrl = data.avatar;
+                    var av = document.getElementById('profileAvatar');
+                    if (av) av.src = data.avatar;
+                }
+                setProfileMsg('已拉取 QQ 昵称与头像，点击“保存资料”生效', false);
+            }).catch(function () {
+                setProfileMsg('网络错误，请重试', true);
+            }).then(function () {
+                if (btn) btn.disabled = false;
+            });
+        }
+
+        function saveUserProfile() {
+            var nameEl = document.getElementById('profileName');
+            var qqEl = document.getElementById('profileQq');
+            var body = {
+                name: (nameEl ? nameEl.value : '').trim(),
+                qq: (qqEl ? qqEl.value : '').trim()
+            };
+            if (userState.avatarData) body.avatar = userState.avatarData;
+            else if (userState.avatarUrl) body.avatar = userState.avatarUrl;
+            var btn = document.getElementById('saveProfileBtn');
+            if (btn) btn.disabled = true;
+            setProfileMsg('保存中…');
+            userApi('/api/user/profile', { method: 'POST', body: JSON.stringify(body) }).then(function (res) {
+                var data = res.data || {};
+                if (!res.ok) { setProfileMsg(data.error || '保存失败', true); return; }
+                userState.user = data.user;
+                setProfileMsg('已保存', false);
+                renderSideUser(userState.user);
+                renderProfile();
+            }).catch(function () {
+                setProfileMsg('网络错误，请重试', true);
+            }).then(function () {
+                if (btn) btn.disabled = false;
+            });
+        }
+
+        function logoutUser() {
+            setUserToken('');
+            userState.user = null;
+            renderSideUser(null);
+            renderProfile();
+            setAuthMsg('已退出登录', false);
+        }
+
+        function bindAvatarUpload() {
+            var input = document.getElementById('avatarFile');
+            if (!input) return;
+            input.addEventListener('change', function () {
+                var file = input.files && input.files[0];
+                if (!file) return;
+                if (!/^image\/(png|jpeg|webp|gif)$/.test(file.type)) {
+                    setProfileMsg('仅支持 PNG / JPG / WebP / GIF', true);
+                    return;
+                }
+                if (file.size > 512 * 1024) {
+                    setProfileMsg('图片过大，请控制在 512KB 以内', true);
+                    return;
+                }
+                var reader = new FileReader();
+                reader.onload = function () {
+                    userState.avatarData = String(reader.result || '');
+                    userState.avatarUrl = '';
+                    var av = document.getElementById('profileAvatar');
+                    if (av) av.src = userState.avatarData;
+                    setProfileMsg('头像已选择，点击“保存资料”生效', false);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
         // 页面初始加载
         window.addEventListener('DOMContentLoaded', function() {
             var mainContent = document.getElementById('mainContent');
@@ -2042,6 +2503,10 @@
             }
             preloadMapImages();
             warmDeltaSecrets();
+            renderSideUser(null);
+            loadUserConfig(false);
+            loadCurrentUser();
+            bindAvatarUpload();
             applyPath();
         });
 

@@ -20,6 +20,6 @@ export async function onRequestPost({ request, env }) {
     return error('密码错误', 401);
   }
 
-  const token = await createSessionToken(env.SESSION_SECRET, TOKEN_TTL_SECONDS);
+  const token = await createSessionToken(env.SESSION_SECRET, { role: 'admin' }, TOKEN_TTL_SECONDS);
   return json({ ok: true, token, expiresIn: TOKEN_TTL_SECONDS });
 }

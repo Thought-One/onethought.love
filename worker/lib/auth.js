@@ -30,17 +30,24 @@ async function importKey(secret) {
   );
 }
 
-export async function createSessionToken(secret, maxAgeSeconds = DEFAULT_MAX_AGE) {
-  const payload = toBase64Url(
-    encoder.encode(JSON.stringify({ exp: Date.now() + maxAgeSeconds * 1000 })),
-  );
+// 创建签名令牌。支持两种调用：
+//   createSessionToken(secret, 3600)                        旧式：仅过期时间
+//   createSessionToken(secret, { role: 'user', uid }, 3600) 新式：自定义载荷
+export async function createSessionToken(secret, payload = {}, maxAgeSeconds = DEFAULT_MAX_AGE) {
+  if (typeof payload === 'number') {
+    maxAgeSeconds = payload;
+    payload = {};
+  }
+  const body = { ...payload, exp: Date.now() + maxAgeSeconds * 1000 };
+  const data = toBase64Url(encoder.encode(JSON.stringify(body)));
   const key = await importKey(secret);
-  const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(payload));
-  return `${payload}.${toBase64Url(signature)}`;
+  const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(data));
+  return `${data}.${toBase64Url(signature)}`;
 }
 
+// 校验令牌，成功返回载荷对象，失败返回 null。
 export async function verifySessionToken(token, secret) {
-  if (!token || !token.includes('.')) return false;
+  if (!token || !token.includes('.')) return null;
   const [payload, signature] = token.split('.');
   try {
     const key = await importKey(secret);
@@ -50,11 +57,12 @@ export async function verifySessionToken(token, secret) {
       fromBase64Url(signature),
       encoder.encode(payload),
     );
-    if (!valid) return false;
+    if (!valid) return null;
     const data = JSON.parse(decoder.decode(fromBase64Url(payload)));
-    return typeof data.exp === 'number' && data.exp > Date.now();
+    if (typeof data.exp !== 'number' || data.exp <= Date.now()) return null;
+    return data;
   } catch (err) {
-    return false;
+    return null;
   }
 }
 
@@ -87,9 +95,19 @@ function readBearer(request) {
   return match ? match[1].trim() : null;
 }
 
+// 后台管理员校验：只接受请求头中的令牌，确保每次进入后台都需要重新登录。
+// 用户令牌（role: 'user'）不视为管理员。
 export async function isAuthenticated(request, env) {
   if (!env.SESSION_SECRET) return false;
-  // 仅接受请求头中的令牌，确保每次进入后台都需要重新登录
   const token = readBearer(request);
-  return verifySessionToken(token, env.SESSION_SECRET);
+  const data = await verifySessionToken(token, env.SESSION_SECRET);
+  return !!data && data.role !== 'user';
+}
+
+// 前台用户校验：接受 role: 'user' 的令牌。
+export async function getUserAuth(request, env) {
+  if (!env.SESSION_SECRET) return null;
+  const token = readBearer(request);
+  const data = await verifySessionToken(token, env.SESSION_SECRET);
+  return data && data.role === 'user' ? data : null;
 }
