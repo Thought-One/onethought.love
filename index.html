@@ -928,7 +928,14 @@
             background: rgba(255,255,255,0.8); color: var(--brand);
             border: 1px solid var(--border); box-shadow: none;
         }
-        .turnstile-box { margin-top: 14px; display: flex; justify-content: center; }
+        .auth-tabs { display: flex; gap: 10px; margin-bottom: 10px; }
+        .auth-tab {
+            flex: 1 1 0; padding: 9px 0; border: none; cursor: pointer;
+            border-radius: 999px; font-family: inherit; font-size: 0.95em; font-weight: 600;
+            background: rgba(0,151,167,0.10); color: var(--brand);
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+        .auth-tab.active { background: linear-gradient(135deg, var(--accent), var(--brand)); color: #fff; }
         .profile-avatar-row { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
         .profile-avatar {
             width: 84px; height: 84px; border-radius: 50%; object-fit: cover;
@@ -1089,18 +1096,34 @@
                 </div>
                 <!-- 未登录：登录 / 注册 -->
                 <div id="authPanel" class="auth-panel">
-                    <label for="authEmail">邮箱</label>
-                    <input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com">
-                    <div class="auth-code-row">
-                        <input id="authCode" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="6 位验证码">
-                        <button type="button" class="auth-btn ghost" id="sendCodeBtn" onclick="sendUserCode()">获取验证码</button>
+                    <div class="auth-tabs">
+                        <button type="button" class="auth-tab active" id="tabLogin" onclick="switchAuth('login')">登录</button>
+                        <button type="button" class="auth-tab" id="tabRegister" onclick="switchAuth('register')">注册</button>
                     </div>
-                    <div id="turnstileBox" class="turnstile-box" style="display:none;"></div>
-                    <div id="authMsg" class="df-status"></div>
-                    <button type="button" class="auth-btn" id="verifyBtn" onclick="verifyUserCode()">登录 / 注册</button>
+                    <div id="loginForm">
+                        <label for="loginUsername">账号</label>
+                        <input id="loginUsername" type="text" autocomplete="username" maxlength="20" placeholder="你的账号">
+                        <label for="loginPassword">密码</label>
+                        <input id="loginPassword" type="password" autocomplete="current-password" maxlength="64" placeholder="密码">
+                        <div id="loginMsg" class="df-status"></div>
+                        <button type="button" class="auth-btn" id="loginBtn" onclick="loginUser()">登录</button>
+                    </div>
+                    <div id="registerForm" style="display:none;">
+                        <label for="regUsername">账号</label>
+                        <input id="regUsername" type="text" autocomplete="username" maxlength="20" placeholder="2-20 位：中文 / 字母 / 数字 / 下划线">
+                        <label for="regPassword">密码</label>
+                        <input id="regPassword" type="password" autocomplete="new-password" maxlength="64" placeholder="6-64 位">
+                        <label for="regPassword2">确认密码</label>
+                        <input id="regPassword2" type="password" autocomplete="new-password" maxlength="64" placeholder="再输一次密码">
+                        <label for="regInvite">邀请码</label>
+                        <input id="regInvite" type="text" maxlength="32" placeholder="请输入邀请码">
+                        <div id="regMsg" class="df-status"></div>
+                        <button type="button" class="auth-btn" id="registerBtn" onclick="registerUser()">注册</button>
+                    </div>
                 </div>
                 <!-- 已登录：资料编辑 -->
                 <div id="profilePanel" class="profile-panel" style="display:none;">
+                    <div class="auth-identity" id="profileIdentity"></div>
                     <div class="profile-avatar-row">
                         <img id="profileAvatar" class="profile-avatar" src="res/icons/user.svg" alt="">
                         <div class="profile-avatar-actions">
@@ -2197,11 +2220,9 @@
             }
         }
 
-        // ===== 用户系统：邮箱验证码登录 / 资料与头像 =====
+        // ===== 用户系统：账号密码登录 / 资料与头像 =====
         var USER_TOKEN_KEY = 'ot_user_token';
-        var userState = { config: null, user: null, avatarData: '', avatarUrl: '', tsPromise: null };
-        var turnstileToken = '';
-        var turnstileRendered = false;
+        var userState = { config: null, user: null, avatarData: '', avatarUrl: '' };
 
         function getUserToken() {
             try { return localStorage.getItem(USER_TOKEN_KEY) || ''; } catch (e) { return ''; }
@@ -2235,23 +2256,20 @@
             var img = document.getElementById('sideUserAvatar');
             var name = document.getElementById('sideUserName');
             var a = document.getElementById('sideUser');
-            var label = (user && (user.name || user.email)) ? (user.name || user.email) : '未登录';
+            var label = (user && (user.name || user.username)) ? (user.name || user.username) : '未登录';
             if (img) img.src = (user && user.avatar) ? user.avatar : 'res/icons/user.svg';
             if (name) name.textContent = label;
-            if (a) a.title = (user && (user.name || user.email)) ? (user.name || user.email) : '登录 / 注册';
+            if (a) a.title = (user && (user.name || user.username)) ? (user.name || user.username) : '登录 / 注册';
         }
 
-        function setAuthMsg(text, isError) {
-            var el = document.getElementById('authMsg');
+        function setMsg(id, text, isError) {
+            var el = document.getElementById(id);
             if (!el) return;
             el.className = 'df-status' + (isError ? ' warn' : '');
             el.textContent = text || '';
         }
         function setProfileMsg(text, isError) {
-            var el = document.getElementById('profileMsg');
-            if (!el) return;
-            el.className = 'df-status' + (isError ? ' warn' : '');
-            el.textContent = text || '';
+            setMsg('profileMsg', text, isError);
         }
 
         function loadUserConfig(force) {
@@ -2286,7 +2304,7 @@
             renderProfile();
             loadUserConfig(false).then(function (cfg) {
                 if (cfg && cfg.kvReady === false) {
-                    setAuthMsg('用户系统尚未配置：请在 Cloudflare 创建 KV 命名空间并绑定为 USER_KV。', true);
+                    setMsg('loginMsg', '用户系统尚未配置：请在 Cloudflare 创建 KV 命名空间并绑定为 USER_KV。', true);
                 }
             });
         }
@@ -2305,105 +2323,73 @@
                 if (nm) nm.value = u.name || '';
                 var qq = document.getElementById('profileQq');
                 if (qq) qq.value = u.qq || '';
+                var idn = document.getElementById('profileIdentity');
+                if (idn) idn.textContent = '账号：' + (u.username || '');
             }
             userState.avatarData = '';
             userState.avatarUrl = '';
         }
 
-        // —— Turnstile 真人验证（仅在注册时后端才强制） ——
-        function loadTurnstileScript() {
-            if (window.turnstile) return Promise.resolve();
-            if (userState.tsPromise) return userState.tsPromise;
-            userState.tsPromise = new Promise(function (resolve) {
-                var s = document.createElement('script');
-                s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-                s.async = true;
-                s.defer = true;
-                s.onload = function () { resolve(); };
-                s.onerror = function () { resolve(); };
-                document.head.appendChild(s);
-            });
-            return userState.tsPromise;
+        function switchAuth(which) {
+            var isLogin = which !== 'register';
+            var login = document.getElementById('loginForm');
+            var reg = document.getElementById('registerForm');
+            var tabLogin = document.getElementById('tabLogin');
+            var tabReg = document.getElementById('tabRegister');
+            if (login) login.style.display = isLogin ? 'block' : 'none';
+            if (reg) reg.style.display = isLogin ? 'none' : 'block';
+            if (tabLogin) tabLogin.classList.toggle('active', isLogin);
+            if (tabReg) tabReg.classList.toggle('active', !isLogin);
         }
 
-        function showTurnstile() {
-            var box = document.getElementById('turnstileBox');
-            var key = userState.config && userState.config.turnstileSiteKey;
-            if (!box || !key) return;
-            box.style.display = 'flex';
-            if (turnstileRendered) return;
-            loadTurnstileScript().then(function () {
-                if (!window.turnstile || !box) return;
-                window.turnstile.render(box, {
-                    sitekey: key,
-                    callback: function (token) { turnstileToken = token; sendUserCode(); },
-                    'expired-callback': function () { turnstileToken = ''; },
-                    'error-callback': function () { turnstileToken = ''; }
-                });
-                turnstileRendered = true;
-            });
+        function afterAuth(data) {
+            setUserToken(data.token);
+            userState.user = data.user;
+            renderSideUser(userState.user);
+            renderProfile();
         }
 
-        function sendUserCode() {
-            var emailEl = document.getElementById('authEmail');
-            var email = (emailEl ? emailEl.value : '').trim();
-            if (!email) { setAuthMsg('请输入邮箱', true); return; }
-            var btn = document.getElementById('sendCodeBtn');
+        function loginUser() {
+            var u = ((document.getElementById('loginUsername') || {}).value || '').trim();
+            var p = (document.getElementById('loginPassword') || {}).value || '';
+            if (!u || !p) { setMsg('loginMsg', '请输入账号和密码', true); return; }
+            var btn = document.getElementById('loginBtn');
             if (btn) btn.disabled = true;
-            setAuthMsg('发送中…');
-            var body = { email: email };
-            if (turnstileToken) body.turnstileToken = turnstileToken;
-            userApi('/api/user/send-code', { method: 'POST', body: JSON.stringify(body) }).then(function (res) {
-                var data = res.data || {};
-                if (!res.ok) {
-                    if (data.needTurnstile) {
-                        showTurnstile();
-                        setAuthMsg(data.error || '请完成真人验证后再试', true);
-                    } else {
-                        setAuthMsg(data.error || '发送失败，请稍后重试', true);
-                    }
-                    return;
-                }
-                var msg;
-                if (data.sent) msg = '验证码已发送到邮箱，10 分钟内有效';
-                else if (data.devCode) msg = '开发模式：验证码为 ' + data.devCode + '（未配置邮件服务，仅供测试）';
-                else msg = '验证码已生成，请查看邮箱';
-                setAuthMsg(msg, false);
-                turnstileToken = '';
-                if (window.turnstile && turnstileRendered) {
-                    try { window.turnstile.reset(); } catch (e) { /* 忽略 */ }
-                }
-            }).catch(function () {
-                setAuthMsg('网络错误，请重试', true);
-            }).then(function () {
-                if (btn) btn.disabled = false;
-            });
+            setMsg('loginMsg', '登录中…');
+            userApi('/api/user/login', { method: 'POST', body: JSON.stringify({ username: u, password: p }) })
+                .then(function (res) {
+                    var data = res.data || {};
+                    if (!res.ok || !data.token) { setMsg('loginMsg', data.error || '登录失败', true); return; }
+                    var pw = document.getElementById('loginPassword');
+                    if (pw) pw.value = '';
+                    setMsg('loginMsg', '登录成功', false);
+                    afterAuth(data);
+                })
+                .catch(function () { setMsg('loginMsg', '网络错误，请重试', true); })
+                .then(function () { if (btn) btn.disabled = false; });
         }
 
-        function verifyUserCode() {
-            var emailEl = document.getElementById('authEmail');
-            var codeEl = document.getElementById('authCode');
-            var email = (emailEl ? emailEl.value : '').trim();
-            var code = (codeEl ? codeEl.value : '').trim();
-            if (!email) { setAuthMsg('请输入邮箱', true); return; }
-            if (!/^\d{6}$/.test(code)) { setAuthMsg('请输入 6 位数字验证码', true); return; }
-            var btn = document.getElementById('verifyBtn');
+        function registerUser() {
+            var u = ((document.getElementById('regUsername') || {}).value || '').trim();
+            var p = (document.getElementById('regPassword') || {}).value || '';
+            var p2 = (document.getElementById('regPassword2') || {}).value || '';
+            var invite = ((document.getElementById('regInvite') || {}).value || '').trim();
+            if (!u) { setMsg('regMsg', '请输入账号', true); return; }
+            if (p.length < 6) { setMsg('regMsg', '密码至少 6 位', true); return; }
+            if (p !== p2) { setMsg('regMsg', '两次输入的密码不一致', true); return; }
+            if (!invite) { setMsg('regMsg', '请输入邀请码', true); return; }
+            var btn = document.getElementById('registerBtn');
             if (btn) btn.disabled = true;
-            setAuthMsg('验证中…');
-            userApi('/api/user/verify', { method: 'POST', body: JSON.stringify({ email: email, code: code }) }).then(function (res) {
-                var data = res.data || {};
-                if (!res.ok || !data.token) { setAuthMsg(data.error || '登录失败', true); return; }
-                setUserToken(data.token);
-                userState.user = data.user;
-                if (codeEl) codeEl.value = '';
-                setAuthMsg('登录成功', false);
-                renderSideUser(userState.user);
-                renderProfile();
-            }).catch(function () {
-                setAuthMsg('网络错误，请重试', true);
-            }).then(function () {
-                if (btn) btn.disabled = false;
-            });
+            setMsg('regMsg', '注册中…');
+            userApi('/api/user/register', { method: 'POST', body: JSON.stringify({ username: u, password: p, invite: invite }) })
+                .then(function (res) {
+                    var data = res.data || {};
+                    if (!res.ok || !data.token) { setMsg('regMsg', data.error || '注册失败', true); return; }
+                    setMsg('regMsg', '注册成功', false);
+                    afterAuth(data);
+                })
+                .catch(function () { setMsg('regMsg', '网络错误，请重试', true); })
+                .then(function () { if (btn) btn.disabled = false; });
         }
 
         function pullQqProfile() {
@@ -2465,7 +2451,8 @@
             userState.user = null;
             renderSideUser(null);
             renderProfile();
-            setAuthMsg('已退出登录', false);
+            switchAuth('login');
+            setMsg('loginMsg', '已退出登录', false);
         }
 
         function bindAvatarUpload() {

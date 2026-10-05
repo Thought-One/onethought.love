@@ -1,21 +1,17 @@
-// 用户系统接口：邮箱验证码登录/注册、真人验证、资料与头像。
-// 资料存放在 KV（USER_KV），不写入 B2。
+// 用户系统接口：账号 + 密码 + 邀请码注册，账号密码登录；资料与头像存 KV，不写入 B2。
 import { json, error } from './http.js';
 import { createSessionToken, getUserAuth } from './auth.js';
-import { mailMode, sendCodeMail } from './mail.js';
-import { turnstileEnabled, verifyTurnstile } from './turnstile.js';
 import {
   kvReady,
-  normalizeEmail,
-  validEmail,
+  normalizeUsername,
+  validUsername,
+  validPassword,
   makeUserId,
-  readUserByEmail,
+  readUser,
   writeUser,
   publicUser,
-  saveCode,
-  readCode,
-  bumpCodeTries,
-  deleteCode,
+  hashPassword,
+  verifyPassword,
   allowRate,
   putAvatar,
   getAvatar,
@@ -36,73 +32,21 @@ function clientIp(request) {
   return request.headers.get('CF-Connecting-IP') || '';
 }
 
-// GET /api/user/config —— 前端所需公开配置
+function issueToken(env, user) {
+  return createSessionToken(
+    env.SESSION_SECRET,
+    { role: 'user', uid: user.id, username: user.username },
+    USER_TOKEN_TTL,
+  );
+}
+
+// GET /api/user/config
 export async function onConfig({ env }) {
-  return json({
-    kvReady: kvReady(env),
-    emailMode: mailMode(env),
-    turnstileSiteKey: env.TURNSTILE_SITE_KEY || '',
-    turnstileEnabled: turnstileEnabled(env),
-  });
+  return json({ kvReady: kvReady(env) });
 }
 
-// POST /api/user/send-code —— 发送邮箱验证码（新邮箱需通过真人验证）
-export async function onSendCode({ request, env }) {
-  if (!kvReady(env)) return error('用户系统未配置：请在 Cloudflare 创建 KV 命名空间并绑定为 USER_KV。', 500);
-
-  let body;
-  try {
-    body = await request.json();
-  } catch (err) {
-    return error('请求格式错误');
-  }
-
-  const email = normalizeEmail(body && body.email);
-  if (!validEmail(email)) return error('请输入有效的邮箱地址');
-
-  const mode = mailMode(env);
-  if (mode === 'off') {
-    return error('邮件服务未配置：请在 Cloudflare 设置 RESEND_API_KEY（或临时设置 USER_DEV_MODE=1 仅用于测试）。', 503);
-  }
-
-  // 频率限制：60 秒 1 次、每小时 5 次（按邮箱）
-  if (!(await allowRate(env, `code:${email}:60`, 1, 60))) {
-    return error('请求过于频繁，请稍后再试', 429);
-  }
-  if (!(await allowRate(env, `code:${email}:h`, 5, 3600))) {
-    return error('今日验证码次数过多，请稍后再试', 429);
-  }
-
-  const existing = await readUserByEmail(env, email);
-  const isNew = !existing;
-
-  // 仅在注册（新邮箱）时要求真人验证
-  if (isNew && turnstileEnabled(env)) {
-    const result = await verifyTurnstile(env, body && body.turnstileToken, clientIp(request));
-    if (!result.ok) return json({ error: result.error, needTurnstile: true }, { status: 400 });
-  }
-
-  const code = String(Math.floor(100000 + Math.random() * 900000));
-  await saveCode(env, email, code);
-
-  let sent = false;
-  try {
-    sent = await sendCodeMail(env, email, code);
-  } catch (err) {
-    await deleteCode(env, email);
-    return error(String((err && err.message) || err), 502);
-  }
-
-  const payload = { ok: true, isNew, sent, emailMode: mode };
-  if (!sent && mode === 'dev') {
-    // 开发模式（USER_DEV_MODE=1）：不真正发信，直接把验证码回传，仅用于测试
-    payload.devCode = code;
-  }
-  return json(payload);
-}
-
-// POST /api/user/verify —— 校验验证码，注册/登录并签发用户令牌
-export async function onVerify({ request, env }) {
+// POST /api/user/register —— { username, password, invite }
+export async function onRegister({ request, env }) {
   if (!kvReady(env) || !env.SESSION_SECRET) return error('用户系统未配置', 500);
 
   let body;
@@ -112,60 +56,77 @@ export async function onVerify({ request, env }) {
     return error('请求格式错误');
   }
 
-  const email = normalizeEmail(body && body.email);
-  const code = String((body && body.code) || '').trim();
-  if (!validEmail(email)) return error('请输入有效的邮箱地址');
-  if (!/^\d{6}$/.test(code)) return error('请输入 6 位数字验证码');
+  const username = normalizeUsername(body && body.username);
+  const password = typeof (body && body.password) === 'string' ? body.password : '';
+  const invite = String((body && body.invite) || '').trim();
 
-  const rec = await readCode(env, email);
-  if (!rec) return error('验证码已过期，请重新获取');
+  if (!validUsername(username)) return error('账号需 2-20 位（中文/字母/数字/下划线）');
+  if (!validPassword(password)) return error('密码长度需为 6-64 位');
 
-  if (rec.code !== code) {
-    const tries = await bumpCodeTries(env, email, rec);
-    if (tries >= 5) {
-      await deleteCode(env, email);
-      return error('错误次数过多，请重新获取验证码');
-    }
-    return error('验证码不正确');
+  const expected = String(env.INVITE_CODE || 'ONETHOUGHT').trim().toUpperCase();
+  if (invite.toUpperCase() !== expected) return error('邀请码不正确');
+
+  if (!(await allowRate(env, `reg:${clientIp(request)}`, 10, 3600))) {
+    return error('注册过于频繁，请稍后再试', 429);
   }
 
-  await deleteCode(env, email);
+  const existing = await readUser(env, username);
+  if (existing) return error('该账号已被注册');
 
   const now = Date.now();
-  let user = await readUserByEmail(env, email);
-  if (!user) {
-    user = {
-      id: makeUserId(),
-      email,
-      name: email.split('@')[0],
-      avatar: '',
-      qq: '',
-      createdAt: now,
-      lastLoginAt: now,
-    };
-  } else {
-    user.lastLoginAt = now;
-  }
+  const user = {
+    id: makeUserId(),
+    username,
+    name: username,
+    avatar: '',
+    qq: '',
+    pass: await hashPassword(password),
+    createdAt: now,
+    lastLoginAt: now,
+  };
   await writeUser(env, user);
 
-  const token = await createSessionToken(
-    env.SESSION_SECRET,
-    { role: 'user', uid: user.id, email: user.email },
-    USER_TOKEN_TTL,
-  );
-  return json({ ok: true, token, user: publicUser(user), expiresIn: USER_TOKEN_TTL });
+  return json({ ok: true, token: await issueToken(env, user), user: publicUser(user) });
 }
 
-// GET /api/user/me —— 当前登录用户
+// POST /api/user/login —— { username, password }
+export async function onLogin({ request, env }) {
+  if (!kvReady(env) || !env.SESSION_SECRET) return error('用户系统未配置', 500);
+
+  let body;
+  try {
+    body = await request.json();
+  } catch (err) {
+    return error('请求格式错误');
+  }
+
+  const username = normalizeUsername(body && body.username);
+  const password = typeof (body && body.password) === 'string' ? body.password : '';
+  if (!username || !password) return error('请输入账号和密码');
+
+  if (!(await allowRate(env, `login:${clientIp(request)}`, 30, 3600))) {
+    return error('尝试过于频繁，请稍后再试', 429);
+  }
+
+  const user = await readUser(env, username);
+  if (!user) return error('账号或密码错误', 401);
+  if (!(await verifyPassword(password, user.pass))) return error('账号或密码错误', 401);
+
+  user.lastLoginAt = Date.now();
+  await writeUser(env, user);
+  return json({ ok: true, token: await issueToken(env, user), user: publicUser(user) });
+}
+
+// GET /api/user/me
 export async function onMe({ request, env }) {
   if (!kvReady(env)) return json({ user: null, kvReady: false });
   const auth = await getUserAuth(request, env);
   if (!auth) return json({ user: null });
-  const user = await readUserByEmail(env, auth.email);
+  const user = await readUser(env, auth.username);
   return json({ user: publicUser(user) });
 }
 
-// POST /api/user/qq —— 通过 QQ 号拉取昵称与头像（需登录，避免被当作开放代理）
+// POST /api/user/qq —— 通过 QQ 号拉取昵称与头像（需登录）
 export async function onQq({ request, env }) {
   const auth = await getUserAuth(request, env);
   if (!auth) return error('请先登录', 401);
@@ -214,7 +175,7 @@ export async function onProfile({ request, env }) {
     return error('请求格式错误');
   }
 
-  const user = await readUserByEmail(env, auth.email);
+  const user = await readUser(env, auth.username);
   if (!user) return error('用户不存在', 404);
 
   if (typeof body.name === 'string') {
@@ -245,7 +206,6 @@ export async function onProfile({ request, env }) {
     user.avatar = '/api/user/avatar/' + encodeURIComponent(user.id);
   } else if (/^https?:\/\//i.test(avatar)) {
     if (avatar.length > 500) return error('头像链接过长');
-    // 已上传过的头像外链切换到别的地址时，清理旧文件
     if (user.avatar && user.avatar.indexOf('/api/user/avatar/') === 0) {
       await deleteAvatar(env, user.id);
     }
@@ -256,7 +216,7 @@ export async function onProfile({ request, env }) {
   return json({ ok: true, user: publicUser(user) });
 }
 
-// GET /api/user/avatar/:uid —— 读取上传的头像
+// GET /api/user/avatar/:uid
 export async function onAvatar({ env, uid }) {
   if (!kvReady(env)) return new Response('Not Found', { status: 404 });
   const id = String(uid || '').trim();
@@ -265,10 +225,7 @@ export async function onAvatar({ env, uid }) {
   if (!result || !result.value) return new Response('Not Found', { status: 404 });
   const mime = (result.metadata && result.metadata.mime) || 'image/png';
   return new Response(result.value, {
-    headers: {
-      'Content-Type': mime,
-      'Cache-Control': 'public, max-age=86400',
-    },
+    headers: { 'Content-Type': mime, 'Cache-Control': 'public, max-age=86400' },
   });
 }
 

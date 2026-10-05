@@ -1,45 +1,53 @@
-// 用户数据存储（Cloudflare KV）——不写入 B2 桶。
+// 用户数据存储（Cloudflare KV）——不写入 B2。
 // 键约定：
-//   user:<email>        用户资料 JSON
-//   code:<email>        邮箱验证码 { code, tries }（带 TTL）
-//   rate:<scope>        频率限制计数（带 TTL）
-//   avatars/uid         头像二进制（KV，metadata 记录 mime）
+//   user:<username小写>   用户资料 JSON（含密码哈希）
+//   rate:<scope>          频率限制计数（带 TTL）
+//   avatars/<uid>         头像二进制（metadata 记录 mime）
 
 const USER = 'user:';
-const CODE = 'code:';
 const RATE = 'rate:';
 const AVATAR = 'avatars/';
 
-export const USER_TOKEN_TTL = 30 * 24 * 60 * 60; // 用户登录 30 天
-export const CODE_TTL = 10 * 60; // 验证码 10 分钟
+export const USER_TOKEN_TTL = 30 * 24 * 60 * 60; // 登录 30 天
 export const MAX_AVATAR_BYTES = 512 * 1024; // 头像最大 512KB
+const PBKDF2_ITER = 50000; // 兼顾安全与 Workers 免费版 CPU 限制（10ms），可自行调高
+
+const encoder = new TextEncoder();
 
 export function kvReady(env) {
   return !!env.USER_KV;
 }
 
-export function normalizeEmail(email) {
-  return String(email == null ? '' : email).trim().toLowerCase();
+export function normalizeUsername(username) {
+  return String(username == null ? '' : username).trim();
 }
 
-export function validEmail(email) {
-  return typeof email === 'string' && email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+export function validUsername(username) {
+  return /^[A-Za-z0-9_\u4e00-\u9fa5]{2,20}$/.test(username);
+}
+
+export function validPassword(password) {
+  return typeof password === 'string' && password.length >= 6 && password.length <= 64;
 }
 
 export function makeUserId() {
   return 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
-export async function readUserByEmail(env, email) {
+function userKey(username) {
+  return USER + username.toLowerCase();
+}
+
+export async function readUser(env, username) {
   if (!env.USER_KV) return null;
-  return env.USER_KV.get(USER + email, 'json');
+  return env.USER_KV.get(userKey(username), 'json');
 }
 
 export async function writeUser(env, user) {
-  await env.USER_KV.put(USER + user.email, JSON.stringify(user));
+  await env.USER_KV.put(userKey(user.username), JSON.stringify(user));
 }
 
-// 对外公开的用户字段（不含邮箱验证等敏感信息）
+// 对外公开的用户字段
 export function publicUser(user) {
   if (!user) return null;
   let avatar = user.avatar || '';
@@ -48,7 +56,7 @@ export function publicUser(user) {
   }
   return {
     id: user.id,
-    email: user.email,
+    username: user.username,
     name: user.name || '',
     avatar,
     qq: user.qq || '',
@@ -56,33 +64,55 @@ export function publicUser(user) {
   };
 }
 
-// ===== 验证码 =====
-export async function saveCode(env, email, code) {
-  await env.USER_KV.put(
-    CODE + email,
-    JSON.stringify({ code, tries: 0, createdAt: Date.now() }),
-    { expirationTtl: CODE_TTL },
+// ===== 密码（PBKDF2-SHA256） =====
+function toBase64(bytes) {
+  let binary = '';
+  for (let i = 0; i < bytes.length; i += 1) binary += String.fromCharCode(bytes[i]);
+  return btoa(binary);
+}
+
+function fromBase64(str) {
+  const binary = atob(str);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+async function pbkdf2(password, salt, iterations) {
+  const material = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt, iterations, hash: 'SHA-256' },
+    material,
+    256,
   );
+  return new Uint8Array(bits);
 }
 
-export async function readCode(env, email) {
-  return env.USER_KV.get(CODE + email, 'json');
+export async function hashPassword(password) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const bits = await pbkdf2(password, salt, PBKDF2_ITER);
+  return `pbkdf2$${PBKDF2_ITER}$${toBase64(salt)}$${toBase64(bits)}`;
 }
 
-export async function bumpCodeTries(env, email, rec) {
-  const tries = (rec.tries || 0) + 1;
-  const age = Math.floor((Date.now() - (rec.createdAt || Date.now())) / 1000);
-  const remaining = Math.max(1, CODE_TTL - age);
-  await env.USER_KV.put(
-    CODE + email,
-    JSON.stringify({ code: rec.code, tries, createdAt: rec.createdAt || Date.now() }),
-    { expirationTtl: remaining },
-  );
-  return tries;
+function bytesEqual(a, b) {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i += 1) diff |= a[i] ^ b[i];
+  return diff === 0;
 }
 
-export async function deleteCode(env, email) {
-  await env.USER_KV.delete(CODE + email);
+export async function verifyPassword(password, stored) {
+  try {
+    const parts = String(stored || '').split('$');
+    if (parts.length !== 4 || parts[0] !== 'pbkdf2') return false;
+    const iterations = parseInt(parts[1], 10) || PBKDF2_ITER;
+    const salt = fromBase64(parts[2]);
+    const expected = fromBase64(parts[3]);
+    const bits = await pbkdf2(password, salt, iterations);
+    return bytesEqual(bits, expected);
+  } catch (err) {
+    return false;
+  }
 }
 
 // ===== 频率限制：窗口内允许 limit 次 =====

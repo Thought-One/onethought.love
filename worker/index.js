@@ -9,8 +9,8 @@ import { onRequestGet as musicGet } from './lib/music.js';
 import { serveDownload } from './lib/download.js';
 import {
   onConfig as userConfig,
-  onSendCode as userSendCode,
-  onVerify as userVerify,
+  onRegister as userRegister,
+  onLogin as userLogin,
   onMe as userMe,
   onQq as userQq,
   onProfile as userProfile,
@@ -34,8 +34,8 @@ const ROUTES = {
   'GET /api/df-secret': deltaGet,
   'GET /api/wyy': musicGet,
   'GET /api/user/config': userConfig,
-  'POST /api/user/send-code': userSendCode,
-  'POST /api/user/verify': userVerify,
+  'POST /api/user/register': userRegister,
+  'POST /api/user/login': userLogin,
   'GET /api/user/me': userMe,
   'POST /api/user/qq': userQq,
   'POST /api/user/profile': userProfile,
