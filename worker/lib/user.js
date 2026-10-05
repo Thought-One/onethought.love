@@ -32,6 +32,30 @@ function clientIp(request) {
   return request.headers.get('CF-Connecting-IP') || '';
 }
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// 带重试地请求上游；返回 Response（4xx 也会返回，由调用方判断）
+async function fetchWithRetry(url, attempts = 3) {
+  let lastError;
+  for (let i = 0; i < attempts; i += 1) {
+    try {
+      const res = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+          Accept: 'application/json, text/plain, */*',
+        },
+        cf: { cacheTtl: 3600, cacheEverything: true },
+      });
+      if (res.ok || res.status < 500) return res;
+      lastError = new Error(`HTTP ${res.status}`);
+    } catch (err) {
+      lastError = err;
+    }
+    if (i < attempts - 1) await sleep(500);
+  }
+  throw lastError || new Error('upstream failed');
+}
+
 function issueToken(env, user) {
   return createSessionToken(
     env.SESSION_SECRET,
@@ -140,26 +164,23 @@ export async function onQq({ request, env }) {
   const qq = String((body && body.qq) || '').trim();
   if (!/^\d{5,12}$/.test(qq)) return error('请输入有效的 QQ 号');
 
-  let upstream;
+  // 头像直接用腾讯官方 CDN（稳定，不依赖第三方接口）
+  const avatar = `https://q1.qlogo.cn/g?b=qq&nk=${qq}&s=640`;
+
+  // 昵称尽力从第三方接口获取；接口不可用时不影响头像
+  let nickname = '';
   try {
-    upstream = await fetch(`${QQ_API}?qq=${encodeURIComponent(qq)}`, {
-      headers: { 'User-Agent': 'Mozilla/5.0', Accept: 'application/json' },
-      cf: { cacheTtl: 3600, cacheEverything: true },
-    });
+    const res = await fetchWithRetry(`${QQ_API}?qq=${encodeURIComponent(qq)}`);
+    const text = await res.text();
+    const data = JSON.parse(text);
+    if (data && data.code === 'success' && data.data && data.data.nickname) {
+      nickname = String(data.data.nickname);
+    }
   } catch (err) {
-    return error('无法连接 QQ 接口，请稍后重试', 502);
+    // 忽略：昵称留空，由用户手动填写
   }
 
-  let data;
-  try {
-    data = await upstream.json();
-  } catch (err) {
-    return error('QQ 接口返回异常', 502);
-  }
-  if (!data || data.code !== 'success' || !data.data) return error('未找到该 QQ 的昵称或头像');
-
-  const avatar = String(data.data.avatar_url || '').replace(/^http:\/\//i, 'https://');
-  return json({ ok: true, qq, nickname: String(data.data.nickname || ''), avatar });
+  return json({ ok: true, qq, nickname, avatar });
 }
 
 // POST /api/user/profile —— 保存昵称与头像（上传 data URL 或外链 URL）

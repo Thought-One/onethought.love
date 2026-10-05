@@ -123,7 +123,7 @@
             will-change: width;
         }
         #quick-bar.closed {
-            width: 56px;
+            width: 64px;
             background: rgba(255,255,255,0.7);
             box-shadow: 2px 4px 12px rgba(0,188,212,0.06);
         }
@@ -203,9 +203,9 @@
         }
         .quick-user:hover { background: rgba(0,151,167,0.08); }
         .quick-user-avatar {
-            width: 34px;
-            height: 34px;
-            flex: 0 0 34px;
+            width: 44px;
+            height: 44px;
+            flex: 0 0 44px;
             border-radius: 50%;
             object-fit: cover;
             background: rgba(255,255,255,0.7);
@@ -299,6 +299,11 @@
                 width: 20px;
                 height: 20px;
                 flex: 0 0 20px;
+            }
+            .quick-user-avatar {
+                width: 40px;
+                height: 40px;
+                flex: 0 0 40px;
             }
             main { padding: 24px 3vw 160px; }
             .welcome-img { width: 90vw; }
@@ -2412,7 +2417,9 @@
                     var av = document.getElementById('profileAvatar');
                     if (av) av.src = data.avatar;
                 }
-                setProfileMsg('已拉取 QQ 昵称与头像，点击“保存资料”生效', false);
+                setProfileMsg(data.nickname
+                    ? '已拉取 QQ 昵称与头像，点击“保存资料”生效'
+                    : '已获取 QQ 头像；昵称接口暂不可用，可手动填写。点击“保存资料”生效', false);
             }).catch(function () {
                 setProfileMsg('网络错误，请重试', true);
             }).then(function () {
