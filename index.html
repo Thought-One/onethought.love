@@ -203,9 +203,9 @@
         }
         .quick-user:hover { background: rgba(0,151,167,0.08); }
         .quick-user-avatar {
-            width: 44px;
-            height: 44px;
-            flex: 0 0 44px;
+            width: 100px;
+            height: 100px;
+            flex: 0 0 100px;
             border-radius: 50%;
             object-fit: cover;
             background: rgba(255,255,255,0.7);
@@ -220,6 +220,19 @@
             text-overflow: ellipsis;
             opacity: 1;
             transition: opacity 0.3s ease, max-width 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        /* 打开时：大头像在上、昵称在下 */
+        #quick-bar:not(.closed) .quick-user {
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 0 4px 0;
+        }
+        /* 收起时：缩小头像，保持窄栏 */
+        #quick-bar.closed .quick-user-avatar {
+            width: 44px;
+            height: 44px;
+            flex: 0 0 44px;
         }
         #quick-bar.closed .quick-user {
             justify-content: center;
@@ -299,11 +312,6 @@
                 width: 20px;
                 height: 20px;
                 flex: 0 0 20px;
-            }
-            .quick-user-avatar {
-                width: 40px;
-                height: 40px;
-                flex: 0 0 40px;
             }
             main { padding: 24px 3vw 160px; }
             .welcome-img { width: 90vw; }
